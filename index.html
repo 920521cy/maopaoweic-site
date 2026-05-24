@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="冒泡维C的个人主页与AI实验展示站，记录自动化、AI实验和个人项目。">
+  <meta name="theme-color" content="#05070d">
+  <title>冒泡维C | AI实验 / 自动化 / 个人主页</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <a class="brand" href="#home" aria-label="冒泡维C 首页">
+      <span class="brand-mark">C</span>
+      <span>冒泡维C</span>
+    </a>
+
+    <button class="menu-button" type="button" aria-label="打开导航" aria-expanded="false">
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="nav-links" aria-label="主导航">
+      <a href="#about">关于我</a>
+      <a href="#projects">我的项目</a>
+      <a href="#labs">AI实验</a>
+      <a href="#contact">联系方式</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero section" id="home">
+      <div class="hero-copy">
+        <p class="eyebrow">Personal AI Lab</p>
+        <h1>冒泡维C</h1>
+        <p class="subtitle">AI实验 / 自动化 / 个人主页</p>
+        <p class="intro">
+          这里是我的个人主页与AI实验展示站。我会在这里整理自动化工具、AI应用尝试、个人项目，以及那些正在慢慢冒泡的新想法。
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#projects">查看项目</a>
+          <a class="button secondary" href="#labs">进入实验</a>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-label="AI实验主视觉">
+        <div class="orbit-card">
+          <div class="panel-line">
+            <span>maopaoweic.top</span>
+            <strong>Online soon</strong>
+          </div>
+          <div class="signal-board">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div class="terminal-lines">
+            <span>init_ai_lab()</span>
+            <span>deploy_static_site()</span>
+            <span>build_useful_things()</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section about-section" id="about">
+      <div class="section-heading">
+        <p class="eyebrow">About</p>
+        <h2>关于我</h2>
+      </div>
+      <p class="section-text">
+        我关注 AI、自动化、效率工具和个人创造力的结合。这个站点会作为一个轻量但长期更新的空间，用来展示项目、记录实验，也放下阶段性的想法和作品。
+      </p>
+    </section>
+
+    <section class="section cards-section" aria-label="核心内容">
+      <article class="feature-card" id="projects">
+        <span class="card-index">01</span>
+        <h2>我的项目</h2>
+        <p>收集正在构建的产品原型、网页作品、个人工具和有趣的小实验。</p>
+        <a href="#contact" aria-label="联系我了解项目">了解更多</a>
+      </article>
+
+      <article class="feature-card" id="labs">
+        <span class="card-index">02</span>
+        <h2>AI实验</h2>
+        <p>记录提示词、Agent、自动化流程、多模态应用和 AI 辅助创作探索。</p>
+        <a href="#contact" aria-label="联系我了解AI实验">查看实验</a>
+      </article>
+
+      <article class="feature-card" id="contact">
+        <span class="card-index">03</span>
+        <h2>联系方式</h2>
+        <p>域名：maopaoweic.top。后续可以在这里加入邮箱、社交账号或作品集链接。</p>
+        <a href="https://maopaoweic.top" aria-label="访问 maopaoweic.top">访问域名</a>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> 冒泡维C. Built for AI experiments.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
