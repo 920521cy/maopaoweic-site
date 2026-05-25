@@ -357,6 +357,39 @@ h1 {
   margin-bottom: 24px;
 }
 
+.contact-lines {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.contact-lines p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: baseline;
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.contact-lines span {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.contact-lines span::after {
+  color: var(--cyan);
+  content: "：";
+}
+
+.feature-card .contact-lines a,
+.contact-lines strong {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .feature-card a {
   color: var(--green);
   font-weight: 800;
