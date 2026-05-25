@@ -15,7 +15,8 @@ if (menuButton && navLinks) {
 
 document.querySelectorAll('a[href^="#"]').forEach((link) => {
   link.addEventListener("click", (event) => {
-    const target = document.querySelector(link.getAttribute("href"));
+    const targetId = link.getAttribute("href");
+    const target = targetId ? document.querySelector(targetId) : null;
 
     if (!target) {
       return;
@@ -25,5 +26,19 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
     target.scrollIntoView({ behavior: "smooth", block: "start" });
     navLinks?.classList.remove("is-open");
     menuButton?.setAttribute("aria-expanded", "false");
+  });
+});
+
+document.querySelectorAll(".faq-list details").forEach((item) => {
+  item.addEventListener("toggle", () => {
+    if (!item.open) {
+      return;
+    }
+
+    document.querySelectorAll(".faq-list details").forEach((otherItem) => {
+      if (otherItem !== item) {
+        otherItem.open = false;
+      }
+    });
   });
 });
