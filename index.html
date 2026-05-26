@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="冒泡维C的个人 AI 实验室，记录 AI 工具、自动化实验、个人项目和阶段性作品。">
+  <meta name="description" content="冒泡维C的个人 AI 实验室、自动化项目展示与独立开发记录站。">
   <meta name="theme-color" content="#05070d">
   <title>冒泡维C · Personal AI Lab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,7 +27,8 @@
       <a href="#about">关于我</a>
       <a href="#projects">项目</a>
       <a href="#labs">AI实验</a>
-      <a href="#contact">联系方式</a>
+      <a href="#workflow">流程</a>
+      <a href="#contact">联系</a>
       <a href="#faq">FAQ</a>
     </nav>
   </header>
@@ -35,11 +36,11 @@
   <main>
     <section class="hero section" id="home">
       <div class="hero-copy">
-        <p class="eyebrow">Personal AI Lab</p>
-        <h1>冒泡维C · Personal AI Lab</h1>
-        <p class="hero-subtitle">记录 AI 工具、自动化实验、个人项目和阶段性作品</p>
+        <p class="eyebrow">Personal AI Lab / Indie Build</p>
+        <h1>冒泡维C的 AI 实验室</h1>
+        <p class="hero-subtitle">记录 AI 工具、自动化项目、独立开发过程和阶段性作品。</p>
         <p class="hero-text">
-          这里是一个轻量的个人实验站，用来整理灵感、原型、自动化流程和 AI 协作实践。内容会持续迭代，先把想法放上来，再慢慢打磨成可展示的作品。
+          这里不是商业官网，而是一个持续进化的个人工作台。我会把想法、原型、自动化脚本、提示词实验和网页作品整理成可复盘的记录。
         </p>
         <div class="hero-actions">
           <a class="button primary" href="#projects">查看项目</a>
@@ -47,26 +48,31 @@
         </div>
       </div>
 
-      <aside class="lab-panel" aria-label="AI实验室信息卡片">
-        <div class="panel-topline">
+      <aside class="hero-console" aria-label="实验室状态面板">
+        <div class="console-header">
           <span>maopaoweic.top</span>
-          <strong>Live Lab</strong>
+          <strong>ACTIVE</strong>
         </div>
-        <div class="panel-screen">
-          <div class="screen-grid" aria-hidden="true">
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span>
+        <div class="console-core">
+          <div class="signal-ring" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
-          <div class="screen-status">
-            <span>实验记录</span>
-            <strong>迭代中</strong>
+          <div>
+            <p>Lab Status</p>
+            <strong>building in public</strong>
           </div>
         </div>
-        <div class="terminal-lines">
-          <span>collect_ideas()</span>
-          <span>prototype_with_ai()</span>
-          <span>ship_small_tools()</span>
+        <div class="console-grid" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <div class="console-lines">
+          <span>capture_problem()</span>
+          <span>draft_with_ai()</span>
+          <span>ship_static_site()</span>
         </div>
       </aside>
     </section>
@@ -74,87 +80,127 @@
     <section class="section intro-section" id="about">
       <div class="section-heading">
         <p class="eyebrow">About</p>
-        <h2>一个记录 AI 与自动化实践的小站</h2>
+        <h2>把 AI 想法变成可见的个人实验记录</h2>
       </div>
-      <p class="section-text">
-        我会把这里作为个人 AI 实验室：记录工具尝试、自动化方案、网页原型、提示词片段和阶段性的项目复盘。现在先搭好结构，后续逐步补充真实内容。
-      </p>
+      <div class="intro-copy">
+        <p>
+          maopaoweic-site 用来承载我的 AI 实验、自动化项目和独立开发尝试。页面内容会先以占位和方向为主，后续逐步替换成真实项目、过程截图、复盘笔记和工具入口。
+        </p>
+        <div class="mini-stats" aria-label="站点方向">
+          <span>静态网站</span>
+          <span>AI 协作</span>
+          <span>长期迭代</span>
+        </div>
+      </div>
     </section>
 
-    <section class="section highlights" aria-label="数据和亮点">
-      <article class="metric-card">
+    <section class="section highlights" aria-label="站点亮点">
+      <article class="highlight-card">
         <span>01</span>
         <h3>AI实验</h3>
-        <p>整理提示词、Agent 协作和多模态探索。</p>
+        <p>提示词、Agent、多模态应用和内容生成流程的尝试记录。</p>
       </article>
-      <article class="metric-card">
+      <article class="highlight-card">
         <span>02</span>
-        <h3>自动化工具</h3>
-        <p>记录可复用的小流程和效率工具原型。</p>
+        <h3>自动化项目</h3>
+        <p>把重复操作拆成可执行流程，沉淀小工具和实践方法。</p>
       </article>
-      <article class="metric-card">
+      <article class="highlight-card">
         <span>03</span>
-        <h3>项目记录</h3>
-        <p>沉淀个人项目、网页作品和阶段性成果。</p>
+        <h3>独立开发</h3>
+        <p>记录从想法、设计、实现到上线的轻量产品构建过程。</p>
       </article>
     </section>
 
-    <section class="section content-block" id="projects">
+    <section class="section showcase-section" id="projects">
       <div class="section-heading compact">
         <p class="eyebrow">Projects</p>
-        <h2>项目卡片</h2>
-        <p>先用占位项目搭好展示节奏，后续替换为真实作品。</p>
+        <h2>项目展示</h2>
+        <p>先搭建展示框架，真实项目内容后续逐步补充。</p>
       </div>
 
       <div class="project-grid">
-        <article class="project-card">
-          <span class="tag">Prototype</span>
-          <h3>自动化工作台</h3>
-          <p>占位项目：用于整理脚本、流程和 AI 辅助执行记录。</p>
-          <a href="#contact">了解更多</a>
+        <article class="project-card featured">
+          <div class="card-topline">
+            <span>Featured</span>
+            <strong>01</strong>
+          </div>
+          <h3>AI 自动化工作台</h3>
+          <p>占位项目：整理日常自动化流程、脚本片段和 AI 协作执行记录。</p>
+          <a href="#contact">等待补充</a>
         </article>
         <article class="project-card">
-          <span class="tag">Web</span>
-          <h3>个人展示页</h3>
-          <p>占位项目：记录网站视觉、内容结构和版本迭代。</p>
-          <a href="#contact">了解更多</a>
+          <div class="card-topline">
+            <span>Web</span>
+            <strong>02</strong>
+          </div>
+          <h3>个人主页系统</h3>
+          <p>占位项目：记录本站的结构、视觉语言、发布链路和迭代过程。</p>
+          <a href="#contact">等待补充</a>
         </article>
         <article class="project-card">
-          <span class="tag">Tool</span>
-          <h3>灵感收集器</h3>
-          <p>占位项目：沉淀想法、素材、提示词和实验结果。</p>
-          <a href="#contact">了解更多</a>
+          <div class="card-topline">
+            <span>Notes</span>
+            <strong>03</strong>
+          </div>
+          <h3>实验笔记库</h3>
+          <p>占位项目：沉淀提示词、工具体验、复盘片段和阶段性想法。</p>
+          <a href="#contact">等待补充</a>
         </article>
       </div>
     </section>
 
-    <section class="section split-section" id="labs">
+    <section class="section labs-section" id="labs">
       <div class="section-heading compact">
         <p class="eyebrow">AI Experiments</p>
-        <h2>AI实验方向</h2>
-        <p>把零散尝试整理成可复盘的实验条目。</p>
+        <h2>实验方向</h2>
+        <p>围绕个人效率、创作辅助和工具化产出，持续做小规模验证。</p>
       </div>
 
-      <div class="lab-grid">
+      <div class="lab-track">
         <article>
           <span>Prompt</span>
-          <h3>提示词</h3>
-          <p>记录可复用的提示词结构、角色设定和输出模板。</p>
+          <h3>提示词结构</h3>
+          <p>记录任务拆解、风格控制、输出格式和复用模板。</p>
         </article>
         <article>
           <span>Agent</span>
-          <h3>Agent</h3>
-          <p>探索任务拆解、工具调用、长期任务和协作流程。</p>
+          <h3>Agent 协作</h3>
+          <p>探索工具调用、长任务跟进、网页检查和代码协作。</p>
         </article>
         <article>
-          <span>Automation</span>
+          <span>Flow</span>
           <h3>自动化流程</h3>
-          <p>把重复操作变成轻量脚本或可执行的工作流。</p>
+          <p>把输入、判断、执行和反馈做成轻量可复用流程。</p>
         </article>
         <article>
-          <span>Multimodal</span>
-          <h3>多模态应用</h3>
-          <p>尝试图像、文本、网页和文档之间的组合玩法。</p>
+          <span>Media</span>
+          <h3>多模态实验</h3>
+          <p>尝试图像、页面、文档和文本之间的组合工作方式。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section workflow-section" id="workflow">
+      <div class="section-heading compact">
+        <p class="eyebrow">Workflow</p>
+        <h2>从问题到上线的三步节奏</h2>
+      </div>
+      <div class="workflow-grid">
+        <article>
+          <span>1</span>
+          <h3>发现问题</h3>
+          <p>从真实使用场景里找重复、低效或值得记录的环节。</p>
+        </article>
+        <article>
+          <span>2</span>
+          <h3>设计方案</h3>
+          <p>拆出目标、输入、输出、约束和最小可验证版本。</p>
+        </article>
+        <article>
+          <span>3</span>
+          <h3>AI协作实现</h3>
+          <p>用 AI 辅助编码、排查、整理文案和完成上线检查。</p>
         </article>
       </div>
     </section>
@@ -163,8 +209,8 @@
       <div class="contact-card">
         <div>
           <p class="eyebrow">Contact</p>
-          <h2>联系方式</h2>
-          <p>有项目交流、实验想法或内容建议，可以通过下面方式联系。</p>
+          <h2>保持轻量联系</h2>
+          <p>欢迎交流 AI 实验、自动化想法、个人网站和独立开发实践。</p>
         </div>
         <div class="contact-lines" aria-label="联系方式列表">
           <p>
@@ -179,48 +225,23 @@
       </div>
     </section>
 
-    <section class="section process-section" aria-label="实验流程">
-      <div class="section-heading compact">
-        <p class="eyebrow">Workflow</p>
-        <h2>实验流程</h2>
-      </div>
-      <div class="process-grid">
-        <article>
-          <span>1</span>
-          <h3>发现问题</h3>
-          <p>从日常工作、学习和创作里找到值得自动化的小痛点。</p>
-        </article>
-        <article>
-          <span>2</span>
-          <h3>设计方案</h3>
-          <p>拆解输入、步骤、输出和约束，先做轻量可验证版本。</p>
-        </article>
-        <article>
-          <span>3</span>
-          <h3>AI协作实现</h3>
-          <p>用 AI 辅助编码、整理、测试和复盘，把想法推进到可展示。</p>
-        </article>
-      </div>
-    </section>
-
     <section class="section faq-section" id="faq">
       <div class="section-heading compact">
         <p class="eyebrow">FAQ</p>
         <h2>常见问题</h2>
       </div>
-
       <div class="faq-list">
         <details open>
           <summary>这个网站是做什么的？</summary>
-          <p>这是冒泡维C的个人 AI 实验室和项目展示站，用来记录自动化、AI 工具、个人项目和阶段性作品。</p>
+          <p>这是冒泡维C的个人 AI 实验室，用来展示自动化项目、AI 实验和独立开发过程。</p>
         </details>
         <details>
-          <summary>后续会更新什么？</summary>
-          <p>会逐步补充真实项目、实验笔记、提示词模板、自动化流程和一些轻量工具说明。</p>
+          <summary>现在的内容都是最终版吗？</summary>
+          <p>不是。当前重点是搭建结构和视觉基调，具体项目说明、案例和作品会后续补充。</p>
         </details>
         <details>
-          <summary>如何联系？</summary>
-          <p>可以通过 QQ邮箱 1013696604@qq.com 或地球账号 Lg101369 联系。</p>
+          <summary>为什么保持纯静态网站？</summary>
+          <p>为了让站点足够轻、快、易维护，也方便通过 GitHub 和 Cloudflare Pages 持续发布。</p>
         </details>
       </div>
     </section>
@@ -228,7 +249,7 @@
 
   <footer class="footer">
     <p>© <span id="year"></span> maopaoweic.top</p>
-    <p>非商业正式官网，个人实验站。</p>
+    <p>个人 AI 实验室 / 自动化项目展示 / 独立开发站点</p>
   </footer>
 
   <script src="./script.js"></script>
