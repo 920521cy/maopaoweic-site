@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloth Lab Playground</title>
+  <link rel="stylesheet" href="./cloth-test.css">
+</head>
+<body>
+  <main class="playground-shell">
+    <section class="playground-copy">
+      <p class="eyebrow">Canvas 2D Prototype</p>
+      <h1>Interactive Cloth Lab</h1>
+      <p>独立实验页，用于验证首页 Hero 的实时布料风效、控制面板和移动端降级策略。</p>
+    </section>
+
+    <section class="cloth-stage" data-cloth-lab>
+      <div class="stage-header">
+        <span>AI Lab Wind Mesh</span>
+        <strong>playground</strong>
+      </div>
+
+      <div class="canvas-frame">
+        <canvas data-cloth-canvas width="720" height="520" aria-label="布料风效实验画布"></canvas>
+      </div>
+
+      <div class="cloth-controls" aria-label="布料风效控制面板">
+        <label>
+          <span>Wind 风力 <output data-cloth-value="wind">55</output></span>
+          <input data-cloth-control="wind" type="range" min="0" max="100" value="55">
+        </label>
+        <label>
+          <span>Turbulence 湍流 <output data-cloth-value="turbulence">42</output></span>
+          <input data-cloth-control="turbulence" type="range" min="0" max="100" value="42">
+        </label>
+        <label>
+          <span>Stiffness 刚度 <output data-cloth-value="stiffness">62</output></span>
+          <input data-cloth-control="stiffness" type="range" min="0" max="100" value="62">
+        </label>
+        <label>
+          <span>Speed 速度 <output data-cloth-value="speed">58</output></span>
+          <input data-cloth-control="speed" type="range" min="0" max="100" value="58">
+        </label>
+      </div>
+    </section>
+  </main>
+
+  <script src="../../frontend/canvas-effects/cloth-lab.js"></script>
+  <script src="./cloth-test.js"></script>
+</body>
+</html>

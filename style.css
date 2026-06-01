@@ -90,8 +90,8 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 76px;
-  padding: 14px 0;
+  min-height: 66px;
+  padding: 10px 0;
   backdrop-filter: blur(18px);
 }
 
@@ -102,14 +102,15 @@ p {
 }
 
 .brand {
-  gap: 10px;
+  gap: 9px;
+  font-size: 15px;
   font-weight: 900;
 }
 
 .brand-mark {
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   place-items: center;
   border: 1px solid rgba(54, 226, 255, 0.5);
   border-radius: 8px;
@@ -119,18 +120,19 @@ p {
 }
 
 .nav-links {
-  gap: 6px;
-  padding: 6px;
-  border: 1px solid var(--line);
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 999px;
-  background: rgba(5, 7, 13, 0.68);
+  background: rgba(5, 7, 13, 0.46);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.18);
 }
 
 .nav-links a {
-  padding: 9px 12px;
+  padding: 8px 11px;
   border-radius: 999px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
   transition: color 180ms ease, background 180ms ease, transform 180ms ease;
 }
 
@@ -163,12 +165,53 @@ p {
 }
 
 .hero {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1.03fr) minmax(320px, 0.78fr);
   gap: 44px;
   align-items: center;
-  min-height: calc(100vh - 76px);
+  min-height: calc(100vh - 66px);
   padding: 58px 0 92px;
+}
+
+.hero::before,
+.hero::after {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  filter: blur(14px);
+  opacity: 0.72;
+  animation: heroGlow 9s ease-in-out infinite alternate;
+}
+
+.hero::before {
+  top: 8%;
+  right: 22%;
+  width: min(48vw, 520px);
+  height: min(48vw, 520px);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(54, 226, 255, 0.32), transparent 58%),
+    radial-gradient(circle at 68% 34%, rgba(183, 156, 255, 0.26), transparent 46%);
+}
+
+.hero::after {
+  right: -8%;
+  bottom: 14%;
+  width: min(42vw, 440px);
+  height: min(42vw, 440px);
+  border-radius: 42% 58% 50% 50%;
+  background: radial-gradient(circle, rgba(91, 120, 255, 0.26), transparent 62%);
+  animation-delay: -3s;
+}
+
+.hero-copy,
+.hero-console,
+.cloth-lab-panel {
+  position: relative;
+  z-index: 1;
 }
 
 .eyebrow {
@@ -182,14 +225,20 @@ p {
 
 h1 {
   max-width: 820px;
-  margin-bottom: 20px;
-  font-size: clamp(44px, 7.4vw, 92px);
-  line-height: 1.02;
+  margin-bottom: 18px;
+  font-size: clamp(48px, 7.25vw, 96px);
+  line-height: 1;
   letter-spacing: 0;
   background: linear-gradient(92deg, #ffffff, #baf5ff 46%, #d7caff 72%, #ffe4f5);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+.hero-title-accent {
+  display: inline-block;
+  font-size: 0.9em;
+  line-height: 0.92;
 }
 
 .hero-subtitle {
@@ -221,6 +270,23 @@ h1 {
   font-size: 17px;
 }
 
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.hero-tags span {
+  padding: 8px 12px;
+  border: 1px solid rgba(54, 226, 255, 0.24);
+  border-radius: 999px;
+  color: var(--muted-strong);
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -229,6 +295,8 @@ h1 {
 }
 
 .button {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -240,6 +308,15 @@ h1 {
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
+.button::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(110deg, transparent 0 32%, rgba(255, 255, 255, 0.34) 48%, transparent 64% 100%);
+  transform: translateX(-130%);
+  transition: transform 520ms ease;
+}
+
 .button:hover,
 .highlight-card:hover,
 .project-card:hover,
@@ -247,6 +324,15 @@ h1 {
 .workflow-grid article:hover,
 .contact-card:hover {
   transform: translateY(-4px);
+}
+
+.button:hover {
+  border-color: rgba(183, 156, 255, 0.6);
+  box-shadow: 0 18px 48px rgba(54, 226, 255, 0.2), 0 0 36px rgba(183, 156, 255, 0.18);
+}
+
+.button:hover::after {
+  transform: translateX(130%);
 }
 
 .button.primary {
@@ -259,6 +345,149 @@ h1 {
 .button.secondary {
   color: var(--text);
   background: rgba(255, 255, 255, 0.06);
+}
+
+.cloth-lab-panel {
+  isolation: isolate;
+  overflow: hidden;
+  padding: 18px;
+  border: 1px solid rgba(54, 226, 255, 0.17);
+  border-radius: 8px;
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02)),
+    linear-gradient(180deg, rgba(3, 8, 16, 0.7), rgba(6, 12, 24, 0.5));
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.32), 0 0 48px rgba(91, 120, 255, 0.06);
+  animation: clothPanelBreath 7.5s ease-in-out infinite;
+}
+
+.cloth-lab-panel::before {
+  position: absolute;
+  inset: 1px;
+  z-index: 0;
+  content: "";
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 24% 18%, rgba(54, 226, 255, 0.14), transparent 36%),
+    radial-gradient(circle at 80% 34%, rgba(183, 156, 255, 0.11), transparent 38%);
+  opacity: 0.62;
+  animation: clothPanelAura 8s ease-in-out infinite alternate;
+}
+
+.cloth-lab-panel::after {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  height: 2px;
+  content: "";
+  background: linear-gradient(90deg, rgba(54, 226, 255, 0.18), rgba(141, 255, 176, 0.62), rgba(183, 156, 255, 0.22));
+}
+
+.cloth-panel-header,
+.cloth-readout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cloth-panel-header {
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.cloth-panel-header strong,
+.cloth-readout strong {
+  color: var(--green);
+}
+
+.cloth-canvas-shell {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.095);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(54, 226, 255, 0.12), transparent 48%),
+    linear-gradient(180deg, rgba(3, 7, 14, 0.98), rgba(7, 13, 26, 0.92));
+}
+
+.cloth-canvas-shell::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(120deg, transparent 0 38%, rgba(185, 246, 255, 0.045) 48%, transparent 58% 100%),
+    radial-gradient(circle at 50% 100%, rgba(54, 226, 255, 0.1), transparent 58%);
+  mix-blend-mode: screen;
+  opacity: 0.42;
+  animation: clothLightFlow 9s ease-in-out infinite;
+}
+
+.cloth-canvas-shell canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.34;
+  min-height: 280px;
+}
+
+.cloth-readout {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  color: var(--muted);
+  background: rgba(3, 8, 16, 0.58);
+  backdrop-filter: blur(12px);
+  font-size: 13px;
+}
+
+.cloth-controls {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 9px;
+  margin-top: 11px;
+}
+
+.cloth-controls label {
+  display: grid;
+  gap: 7px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.032);
+  backdrop-filter: blur(12px);
+}
+
+.cloth-controls label span {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted-strong);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.cloth-controls output {
+  color: var(--cyan);
+}
+
+.cloth-controls input {
+  width: 100%;
+  accent-color: var(--cyan);
+}
+
+.cloth-controls input[type="range"] {
+  height: 4px;
+  cursor: pointer;
+  background: linear-gradient(90deg, rgba(54, 226, 255, 0.54), rgba(141, 255, 176, 0.4), rgba(183, 156, 255, 0.36));
 }
 
 .hero-console {
@@ -439,6 +668,44 @@ h1 {
   color: var(--muted-strong);
   background: rgba(255, 255, 255, 0.05);
   font-weight: 800;
+}
+
+.about-lab-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.about-lab-cards article {
+  min-height: 104px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(14px);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.about-lab-cards article:hover {
+  transform: translateY(-3px);
+  border-color: rgba(54, 226, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.about-lab-cards span {
+  display: inline-flex;
+  margin-bottom: 12px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.about-lab-cards p {
+  margin-bottom: 0;
+  font-size: 14px;
+  line-height: 1.65;
 }
 
 .highlights,
@@ -692,6 +959,54 @@ h1 {
   }
 }
 
+@keyframes heroGlow {
+  0% {
+    opacity: 0.5;
+    transform: translate3d(-12px, 10px, 0) scale(0.96);
+  }
+
+  100% {
+    opacity: 0.86;
+    transform: translate3d(16px, -14px, 0) scale(1.08);
+  }
+}
+
+@keyframes clothPanelBreath {
+  0%,
+  100% {
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.32), 0 0 34px rgba(91, 120, 255, 0.045);
+  }
+
+  50% {
+    box-shadow: 0 24px 78px rgba(0, 0, 0, 0.34), 0 0 54px rgba(54, 226, 255, 0.085);
+  }
+}
+
+@keyframes clothPanelAura {
+  0% {
+    opacity: 0.42;
+    transform: translate3d(-8px, 5px, 0) scale(0.98);
+  }
+
+  100% {
+    opacity: 0.72;
+    transform: translate3d(8px, -6px, 0) scale(1.03);
+  }
+}
+
+@keyframes clothLightFlow {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateX(-8%);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: translateX(8%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -715,6 +1030,12 @@ h1 {
     padding-top: 42px;
   }
 
+  h1 {
+    max-width: 720px;
+    font-size: clamp(44px, 10vw, 76px);
+    line-height: 1.02;
+  }
+
   .lab-track {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -733,7 +1054,7 @@ h1 {
 
   .nav-links {
     position: absolute;
-    top: 70px;
+    top: 62px;
     right: 0;
     left: 0;
     display: none;
@@ -752,7 +1073,8 @@ h1 {
 
   .highlights,
   .project-grid,
-  .workflow-grid {
+  .workflow-grid,
+  .about-lab-cards {
     grid-template-columns: 1fr;
   }
 }
@@ -764,6 +1086,7 @@ h1 {
   }
 
   .hero-console,
+  .cloth-lab-panel,
   .highlight-card,
   .project-card,
   .lab-track article,
@@ -779,6 +1102,14 @@ h1 {
   .console-core {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .cloth-controls {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: clamp(40px, 13vw, 58px);
   }
 
   .footer {

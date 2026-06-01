@@ -36,43 +36,54 @@
   <main>
     <section class="hero section" id="home">
       <div class="hero-copy">
-        <p class="eyebrow">Personal AI Lab / Indie Build</p>
-        <h1>冒泡维C的 AI 实验室</h1>
-        <p class="hero-subtitle">记录 AI 工具、自动化项目、独立开发过程和阶段性作品。</p>
+        <p class="eyebrow">Interactive AI Cloth Lab</p>
+        <h1>冒泡维C <span class="hero-title-accent">AI Lab</span></h1>
+        <p class="hero-subtitle">个人 AI 实验室 / 自动化项目展示 / 独立开发站点</p>
         <p class="hero-text">
-          这里不是商业官网，而是一个持续进化的个人工作台。我会把想法、原型、自动化脚本、提示词实验和网页作品整理成可复盘的记录。
+          用轻量 Canvas 构建实时布料风效，把 AI 实验室、自动化项目和独立开发记录放在同一个可交互的入口里。
         </p>
+        <div class="hero-tags" aria-label="实验室标签">
+          <span>AI Agent</span>
+          <span>n8n workflow</span>
+          <span>GPT playground</span>
+          <span>Realtime cloth sim</span>
+        </div>
         <div class="hero-actions">
           <a class="button primary" href="#projects">查看项目</a>
-          <a class="button secondary" href="#contact">联系我</a>
+          <a class="button secondary" href="#labs">进入实验区</a>
         </div>
       </div>
 
-      <aside class="hero-console" aria-label="实验室状态面板">
-        <div class="console-header">
-          <span>maopaoweic.top</span>
-          <strong>ACTIVE</strong>
+      <aside class="cloth-lab-panel" data-cloth-lab aria-label="AI实验室实时布料风效">
+        <div class="cloth-panel-header">
+          <span>Realtime Cloth Field</span>
+          <strong>Canvas 2D</strong>
         </div>
-        <div class="console-core">
-          <div class="signal-ring" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          <div>
-            <p>Lab Status</p>
-            <strong>building in public</strong>
+        <div class="cloth-canvas-shell">
+          <canvas data-cloth-canvas width="720" height="520" aria-label="实时柔性布料网格动画"></canvas>
+          <div class="cloth-readout">
+            <span>wind mesh</span>
+            <strong>interactive</strong>
           </div>
         </div>
-        <div class="console-grid" aria-hidden="true">
-          <span></span><span></span><span></span><span></span>
-          <span></span><span></span><span></span><span></span>
-          <span></span><span></span><span></span><span></span>
-        </div>
-        <div class="console-lines">
-          <span>capture_problem()</span>
-          <span>draft_with_ai()</span>
-          <span>ship_static_site()</span>
+
+        <div class="cloth-controls" aria-label="布料风效控制面板">
+          <label>
+            <span>Wind 风力 <output data-cloth-value="wind">55</output></span>
+            <input data-cloth-control="wind" type="range" min="0" max="100" value="55">
+          </label>
+          <label>
+            <span>Turbulence 湍流 <output data-cloth-value="turbulence">42</output></span>
+            <input data-cloth-control="turbulence" type="range" min="0" max="100" value="42">
+          </label>
+          <label>
+            <span>Stiffness 刚度 <output data-cloth-value="stiffness">62</output></span>
+            <input data-cloth-control="stiffness" type="range" min="0" max="100" value="62">
+          </label>
+          <label>
+            <span>Speed 速度 <output data-cloth-value="speed">58</output></span>
+            <input data-cloth-control="speed" type="range" min="0" max="100" value="58">
+          </label>
         </div>
       </aside>
     </section>
@@ -90,6 +101,24 @@
           <span>静态网站</span>
           <span>AI 协作</span>
           <span>长期迭代</span>
+        </div>
+        <div class="about-lab-cards" aria-label="实验方向概览">
+          <article>
+            <span>AI Agent</span>
+            <p>个人智能体与自动化执行测试</p>
+          </article>
+          <article>
+            <span>Cloth Simulation</span>
+            <p>Canvas 实时布料风场实验</p>
+          </article>
+          <article>
+            <span>Automation</span>
+            <p>n8n / 脚本 / 工作流自动化</p>
+          </article>
+          <article>
+            <span>AI Tools</span>
+            <p>Codex / GPT / Gemini 工具实验</p>
+          </article>
         </div>
       </div>
     </section>
@@ -252,6 +281,7 @@
     <p>个人 AI 实验室 / 自动化项目展示 / 独立开发站点</p>
   </footer>
 
+  <script src="./frontend/canvas-effects/cloth-lab.js"></script>
   <script src="./script.js"></script>
 </body>
 </html>

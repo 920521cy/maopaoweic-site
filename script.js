@@ -3,6 +3,7 @@ const menuButton = document.querySelector(".menu-button");
 const navLinks = document.querySelector(".nav-links");
 const navItems = document.querySelectorAll(".nav-links a");
 const sections = document.querySelectorAll("main section[id]");
+const clothLabRoot = document.querySelector("[data-cloth-lab]");
 
 if (year) {
   year.textContent = new Date().getFullYear();
@@ -63,3 +64,13 @@ const updateActiveNav = () => {
 
 window.addEventListener("scroll", updateActiveNav, { passive: true });
 updateActiveNav();
+
+// Start the Hero cloth canvas after the normal page controls are wired.
+// A failed canvas initialization should not break navigation or page content.
+if (clothLabRoot && window.ClothLabEffect) {
+  try {
+    new window.ClothLabEffect(clothLabRoot);
+  } catch (error) {
+    console.error("Hero cloth lab failed to initialize:", error);
+  }
+}
