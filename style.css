@@ -1429,6 +1429,29 @@ h1 {
   font-size: 11px;
 }
 
+.admin-featured-pill,
+.admin-source-pill {
+  white-space: nowrap;
+}
+
+.admin-featured-pill {
+  border-color: rgba(183, 156, 255, 0.24);
+  color: var(--muted-strong);
+  background: rgba(183, 156, 255, 0.08);
+}
+
+.admin-featured-pill.is-featured {
+  border-color: rgba(134, 255, 188, 0.28);
+  color: var(--green);
+  background: rgba(134, 255, 188, 0.08);
+}
+
+.admin-source-pill {
+  border-color: rgba(54, 226, 255, 0.22);
+  color: var(--cyan);
+  background: rgba(54, 226, 255, 0.08);
+}
+
 .admin-actions {
   display: flex;
   flex-wrap: wrap;

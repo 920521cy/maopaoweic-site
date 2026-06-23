@@ -134,12 +134,12 @@ const renderDemoButton = (label, message) => `
 
 const renderAdminStatus = (value) => `<span class="status-pill">${escapeHtml(value || "演示数据")}</span>`;
 
-const renderAdminProductRows = () => {
-  if (!products.length) {
-    return `<tr><td colspan="6">暂无商品演示数据。</td></tr>`;
+const renderAdminProductRows = (items = products, sourceLabel = "本地演示数据") => {
+  if (!items.length) {
+    return `<tr><td colspan="8">暂无商品数据。</td></tr>`;
   }
 
-  return products.map((product) => `
+  return items.map((product) => `
     <tr>
       <td>
         <strong>${escapeHtml(product.title)}</strong>
@@ -148,15 +148,42 @@ const renderAdminProductRows = () => {
       <td>${escapeHtml(product.price)}</td>
       <td>${escapeHtml(product.category)}</td>
       <td>${renderAdminStatus(product.status)}</td>
+      <td>
+        <span class="status-pill admin-featured-pill${product.featured ? " is-featured" : ""}">
+          ${product.featured ? "推荐" : "普通"}
+        </span>
+      </td>
       <td><div class="tag-list admin-tags">${renderTagList(product.tags)}</div></td>
+      <td><span class="status-pill admin-source-pill">${escapeHtml(sourceLabel)}</span></td>
       <td>
         <div class="admin-actions">
-          ${renderDemoButton("编辑", "商品编辑功能将在数据库接入后开放")}
-          ${renderDemoButton("下架", "商品上下架功能将在数据库接入后开放")}
+          ${renderDemoButton("编辑", "商品编辑功能将在后台写入接口完成后开放")}
+          ${renderDemoButton("下架", "商品下架功能将在权限系统完成后开放")}
         </div>
       </td>
     </tr>
   `).join("");
+};
+
+const renderAdminProductManagement = async () => {
+  const tableBody = document.querySelector("[data-admin-product-rows]");
+  const sourceStatus = document.querySelector("[data-admin-product-source]");
+
+  if (!tableBody) {
+    return;
+  }
+
+  const apiProducts = await loadProductsFromApi();
+  const usingApiProducts = Array.isArray(apiProducts) && apiProducts.length > 0;
+  const sourceProducts = usingApiProducts ? apiProducts : products;
+  const sourceLabel = usingApiProducts ? "D1 商品数据" : "本地演示数据";
+
+  tableBody.innerHTML = renderAdminProductRows(sourceProducts, sourceLabel);
+
+  if (sourceStatus) {
+    sourceStatus.textContent = `当前显示：${sourceLabel}`;
+    sourceStatus.dataset.state = usingApiProducts ? "connected" : "offline";
+  }
 };
 
 const renderAdminOrderRows = () => {
@@ -601,7 +628,7 @@ const renderAdminDemo = () => {
           <h2>商品管理</h2>
           <p>商品数据已支持 D1 只读 API，后台编辑功能尚未开放。</p>
         </div>
-        <span class="status-pill">静态数据</span>
+        <span class="api-status-pill" data-admin-product-source data-state="pending">读取中</span>
       </div>
       <div class="admin-table-wrap">
         <table class="admin-table">
@@ -611,11 +638,15 @@ const renderAdminDemo = () => {
               <th>价格</th>
               <th>分类</th>
               <th>状态</th>
+              <th>推荐</th>
               <th>标签</th>
+              <th>数据来源</th>
               <th>操作</th>
             </tr>
           </thead>
-          <tbody>${renderAdminProductRows()}</tbody>
+          <tbody data-admin-product-rows>
+            <tr><td colspan="8">正在读取商品数据。</td></tr>
+          </tbody>
         </table>
       </div>
     </article>
@@ -756,6 +787,7 @@ renderProductList();
 renderProductDetail();
 renderDashboardDemo();
 renderAdminDemo();
+renderAdminProductManagement();
 renderAdminDbStats();
 checkApiHealth();
 checkDbHealth();
