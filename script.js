@@ -175,6 +175,51 @@ const loadAdminOrdersFromApi = async () => {
   }
 };
 
+const normalizeCardKeyFromApi = (card = {}) => ({
+  id: card.id || "",
+  productTitle: card.productTitle || "未知商品",
+  productId: card.productId || "",
+  keyMask: card.keyMask || "****-****-DEMO",
+  status: card.status || "available",
+  orderId: card.orderId || null,
+  createdAt: card.createdAt || "",
+  soldAt: card.soldAt || null
+});
+
+const normalizeDemoCard = (card = {}) => ({
+  id: card.id || "",
+  productTitle: card.productTitle || "演示商品",
+  productId: "",
+  keyMask: card.maskedCode || "****-****-DEMO",
+  status: card.status || "演示库存",
+  orderId: null,
+  createdAt: card.note || "本地演示数据",
+  soldAt: null
+});
+
+const loadAdminCardKeysFromApi = async () => {
+  if (!window.fetch) {
+    return null;
+  }
+
+  try {
+    const response = await fetch("/api/admin/card-keys", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true || !Array.isArray(data.cardKeys)) {
+      return null;
+    }
+
+    return data.cardKeys.map(normalizeCardKeyFromApi);
+  } catch {
+    return null;
+  }
+};
+
 const fetchOrderDetail = async (orderId) => {
   const normalizedOrderId = String(orderId || "").trim();
 
@@ -341,30 +386,52 @@ const renderAdminOrderManagement = async () => {
   }
 };
 
-const renderAdminCardRows = () => {
-  if (!demoCards.length) {
-    return `<tr><td colspan="6">暂无卡密演示数据。</td></tr>`;
+const renderAdminCardRows = (items = demoCards.map(normalizeDemoCard), sourceLabel = "本地演示卡密") => {
+  if (!items.length) {
+    return `<tr><td colspan="8">暂无卡密库存数据。</td></tr>`;
   }
 
-  return demoCards.map((card) => {
-    const stock = Number(card.stock ?? card.count ?? 0);
+  return items.map((card) => `
+    <tr>
+      <td>
+        <strong>${escapeHtml(card.productTitle)}</strong>
+        ${card.productId ? `<small>${escapeHtml(card.productId)}</small>` : ""}
+      </td>
+      <td>${renderAdminStatus(card.status)}</td>
+      <td><code class="admin-card-mask">${escapeHtml(card.keyMask || "****-****-DEMO")}</code></td>
+      <td>${escapeHtml(card.orderId || "未关联")}</td>
+      <td>${escapeHtml(card.createdAt || "未知")}</td>
+      <td>${escapeHtml(card.soldAt || "未售出")}</td>
+      <td><span class="status-pill admin-source-pill">${escapeHtml(sourceLabel)}</span></td>
+      <td>
+        <div class="admin-actions">
+          ${renderDemoButton("导入卡密", "卡密导入功能将在后台写入接口完成后开放")}
+          ${renderDemoButton("查看库存", "当前卡密库存仅做只读展示")}
+        </div>
+      </td>
+    </tr>
+  `).join("");
+};
 
-    return `
-      <tr>
-        <td>${escapeHtml(card.productTitle)}</td>
-        <td>${renderAdminStatus(card.status)}</td>
-        <td>${Number.isFinite(stock) ? stock : 0}</td>
-        <td><code>${escapeHtml(card.maskedCode || "****-****-DEMO")}</code></td>
-        <td>${escapeHtml(card.note || "仅显示安全占位符。")}</td>
-        <td>
-          <div class="admin-actions">
-            ${renderDemoButton("导入卡密", "卡密导入功能将在数据库接入后开放")}
-            ${renderDemoButton("查看库存", "库存查看功能将在数据库接入后开放")}
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join("");
+const renderAdminCardManagement = async () => {
+  const tableBody = document.querySelector("[data-admin-card-rows]");
+  const sourceStatus = document.querySelector("[data-admin-card-source]");
+
+  if (!tableBody) {
+    return;
+  }
+
+  const apiCards = await loadAdminCardKeysFromApi();
+  const usingApiCards = Array.isArray(apiCards);
+  const sourceCards = usingApiCards ? apiCards : demoCards.map(normalizeDemoCard);
+  const sourceLabel = usingApiCards ? "D1 卡密库存" : "本地演示卡密";
+
+  tableBody.innerHTML = renderAdminCardRows(sourceCards, sourceLabel);
+
+  if (sourceStatus) {
+    sourceStatus.textContent = `当前显示：${sourceLabel}`;
+    sourceStatus.dataset.state = usingApiCards ? "connected" : "offline";
+  }
 };
 
 const updateHealthStatus = (selector, message, state = "pending") => {
@@ -901,7 +968,7 @@ const renderAdminDemo = () => {
           <p class="eyebrow">Cards</p>
           <h2>卡密管理</h2>
         </div>
-        <span class="status-pill">不显示真实卡密</span>
+        <span class="api-status-pill" data-admin-card-source data-state="pending">正在读取卡密库存</span>
       </div>
       <div class="admin-table-wrap">
         <table class="admin-table">
@@ -909,13 +976,17 @@ const renderAdminDemo = () => {
             <tr>
               <th>商品名</th>
               <th>状态</th>
-              <th>库存数量</th>
-              <th>安全占位符</th>
-              <th>说明</th>
+              <th>脱敏卡密</th>
+              <th>关联订单</th>
+              <th>创建时间</th>
+              <th>售出时间</th>
+              <th>数据来源</th>
               <th>操作</th>
             </tr>
           </thead>
-          <tbody>${renderAdminCardRows()}</tbody>
+          <tbody data-admin-card-rows>
+            <tr><td colspan="8">正在读取卡密库存。</td></tr>
+          </tbody>
         </table>
       </div>
     </article>
@@ -1009,6 +1080,7 @@ renderDashboardDemo();
 renderAdminDemo();
 renderAdminProductManagement();
 renderAdminOrderManagement();
+renderAdminCardManagement();
 renderAdminDbStats();
 checkApiHealth();
 checkDbHealth();

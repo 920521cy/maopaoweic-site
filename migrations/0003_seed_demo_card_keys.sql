@@ -1,0 +1,165 @@
+-- v0.5.0 seed demo card key inventory.
+-- This migration inserts masked placeholders only. It does not store real card keys.
+
+INSERT OR IGNORE INTO card_keys (
+  id,
+  product_id,
+  order_id,
+  key_mask,
+  status,
+  created_at,
+  sold_at
+) VALUES
+(
+  'card-demo-n8n-001',
+  'prod-n8n-content-flow',
+  NULL,
+  'DEMO-KEY-****-001',
+  'available',
+  '2026-06-24T00:00:00.000Z',
+  NULL
+),
+(
+  'card-demo-n8n-002',
+  'prod-n8n-content-flow',
+  NULL,
+  '****-****-DEMO',
+  'reserved',
+  '2026-06-24T00:01:00.000Z',
+  NULL
+),
+(
+  'card-demo-n8n-003',
+  'prod-n8n-content-flow',
+  'LAB-DEMO-CARD-001',
+  'DEMO-KEY-****-003',
+  'sold',
+  '2026-06-24T00:02:00.000Z',
+  '2026-06-24T00:12:00.000Z'
+),
+(
+  'card-demo-components-001',
+  'prod-ai-lab-components',
+  NULL,
+  'DEMO-KEY-****-004',
+  'available',
+  '2026-06-24T00:03:00.000Z',
+  NULL
+),
+(
+  'card-demo-components-002',
+  'prod-ai-lab-components',
+  NULL,
+  '****-****-DEMO',
+  'available',
+  '2026-06-24T00:04:00.000Z',
+  NULL
+),
+(
+  'card-demo-notes-001',
+  'prod-codex-workflow-notes',
+  NULL,
+  'DEMO-KEY-****-005',
+  'available',
+  '2026-06-24T00:05:00.000Z',
+  NULL
+),
+(
+  'card-demo-notes-002',
+  'prod-codex-workflow-notes',
+  NULL,
+  'DEMO-KEY-****-006',
+  'reserved',
+  '2026-06-24T00:06:00.000Z',
+  NULL
+),
+(
+  'card-demo-notes-003',
+  'prod-codex-workflow-notes',
+  'LAB-DEMO-CARD-002',
+  '****-****-DEMO',
+  'sold',
+  '2026-06-24T00:07:00.000Z',
+  '2026-06-24T00:17:00.000Z'
+),
+(
+  'card-demo-agent-001',
+  'prod-agent-board',
+  NULL,
+  'DEMO-KEY-****-007',
+  'available',
+  '2026-06-24T00:08:00.000Z',
+  NULL
+),
+(
+  'card-demo-agent-002',
+  'prod-agent-board',
+  NULL,
+  '****-****-DEMO',
+  'available',
+  '2026-06-24T00:09:00.000Z',
+  NULL
+),
+(
+  'card-demo-agent-003',
+  'prod-agent-board',
+  NULL,
+  'DEMO-KEY-****-008',
+  'reserved',
+  '2026-06-24T00:10:00.000Z',
+  NULL
+),
+(
+  'card-demo-agent-004',
+  'prod-agent-board',
+  'LAB-DEMO-CARD-003',
+  'DEMO-KEY-****-009',
+  'sold',
+  '2026-06-24T00:11:00.000Z',
+  '2026-06-24T00:21:00.000Z'
+),
+(
+  'card-demo-review-001',
+  'prod-site-structure-review',
+  NULL,
+  '****-****-DEMO',
+  'available',
+  '2026-06-24T00:12:00.000Z',
+  NULL
+),
+(
+  'card-demo-review-002',
+  'prod-site-structure-review',
+  NULL,
+  'DEMO-KEY-****-010',
+  'reserved',
+  '2026-06-24T00:13:00.000Z',
+  NULL
+),
+(
+  'card-demo-tools-001',
+  'prod-ai-tools-archive',
+  NULL,
+  'DEMO-KEY-****-011',
+  'available',
+  '2026-06-24T00:14:00.000Z',
+  NULL
+),
+(
+  'card-demo-tools-002',
+  'prod-ai-tools-archive',
+  NULL,
+  '****-****-DEMO',
+  'available',
+  '2026-06-24T00:15:00.000Z',
+  NULL
+),
+(
+  'card-demo-tools-003',
+  'prod-ai-tools-archive',
+  'LAB-DEMO-CARD-004',
+  'DEMO-KEY-****-012',
+  'sold',
+  '2026-06-24T00:16:00.000Z',
+  '2026-06-24T00:26:00.000Z'
+);
