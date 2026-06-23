@@ -175,6 +175,40 @@ const loadAdminOrdersFromApi = async () => {
   }
 };
 
+const fetchOrderDetail = async (orderId) => {
+  const normalizedOrderId = String(orderId || "").trim();
+
+  if (!normalizedOrderId || !window.fetch) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`/api/orders/${encodeURIComponent(normalizedOrderId)}`, {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    const data = await response.json();
+
+    if (response.status === 404) {
+      return { notFound: true };
+    }
+
+    if (!response.ok || data?.ok !== true || !data.order) {
+      return null;
+    }
+
+    return {
+      order: {
+        ...normalizeOrderFromApi(data.order),
+        deliveryStatus: data.order.deliveryStatus || "订单状态待确认"
+      }
+    };
+  } catch {
+    return null;
+  }
+};
+
 const renderProductCard = (product) => `
   <article class="product-card${product.featured ? " featured" : ""}">
     <div class="card-topline">
@@ -198,6 +232,10 @@ const renderDemoOrderCard = (order) => `
     <p>商品名：${escapeHtml(order.productTitle)}</p>
     <p>金额：${escapeHtml(order.amount || "¥0")}</p>
     <p>当前未接入真实支付，不会发放卡密。</p>
+    <div class="demo-order-actions">
+      <button class="button secondary compact-button" type="button" data-copy-order-id="${escapeHtml(order.id)}">复制订单号</button>
+      <a class="button secondary compact-button" href="/order.html?id=${encodeURIComponent(order.id)}">查看订单</a>
+    </div>
   </article>
 `;
 
@@ -620,6 +658,87 @@ const renderProductDetail = async () => {
   `;
 };
 
+const renderOrderResult = (order) => `
+  <article class="order-result-card">
+    <div class="order-result-header">
+      <div>
+        <p class="eyebrow">Order Detail</p>
+        <h2>${escapeHtml(order.id)}</h2>
+      </div>
+      <span class="status-pill order-status-pill">${escapeHtml(order.status || "demo")}</span>
+    </div>
+    <div class="order-result-grid">
+      <p><span>商品名称</span><strong>${escapeHtml(order.productTitle)}</strong></p>
+      <p><span>金额</span><strong>${escapeHtml(order.amount || "¥0")}</strong></p>
+      <p><span>订单状态</span><strong>${escapeHtml(order.status || "demo")}</strong></p>
+      <p><span>支付方式</span><strong>${escapeHtml(order.paymentProvider || "demo")}</strong></p>
+      <p><span>创建时间</span><strong>${escapeHtml(order.createdAt || "未知")}</strong></p>
+      <p><span>发货状态</span><strong>${escapeHtml(order.deliveryStatus || "订单状态待确认")}</strong></p>
+    </div>
+    <p class="order-result-note">当前为演示订单查询，不显示真实卡密或完整用户邮箱。</p>
+  </article>
+`;
+
+const renderOrderLookup = () => {
+  const container = document.querySelector("[data-order-lookup]");
+
+  if (!container) {
+    return;
+  }
+
+  const form = container.querySelector("[data-order-lookup-form]");
+  const input = form?.querySelector('input[name="orderId"]');
+  const result = container.querySelector("[data-order-lookup-result]");
+
+  if (!form || !input || !result) {
+    return;
+  }
+
+  const setResultMessage = (message, state = "pending") => {
+    result.dataset.state = state;
+    result.innerHTML = `<p>${escapeHtml(message)}</p>`;
+  };
+
+  const lookup = async (orderId) => {
+    const normalizedOrderId = String(orderId || "").trim();
+
+    if (!normalizedOrderId) {
+      setResultMessage("请输入订单号。", "offline");
+      return;
+    }
+
+    setResultMessage("正在查询订单。");
+
+    const detail = await fetchOrderDetail(normalizedOrderId);
+
+    if (detail?.order) {
+      result.dataset.state = "connected";
+      result.innerHTML = renderOrderResult(detail.order);
+      return;
+    }
+
+    if (detail?.notFound) {
+      setResultMessage("未找到该订单，请检查订单号。", "offline");
+      return;
+    }
+
+    setResultMessage("订单查询暂时不可用，请稍后再试。", "offline");
+  };
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    lookup(input.value);
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get("id");
+
+  if (orderId) {
+    input.value = orderId;
+    lookup(orderId);
+  }
+};
+
 const renderDashboardDemo = () => {
   const container = document.querySelector("[data-dashboard-demo]");
 
@@ -884,6 +1003,7 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
 renderFeaturedProducts();
 renderProductList();
 renderProductDetail();
+renderOrderLookup();
 renderDashboardDemo();
 renderAdminDemo();
 renderAdminProductManagement();
@@ -891,6 +1011,28 @@ renderAdminOrderManagement();
 renderAdminDbStats();
 checkApiHealth();
 checkDbHealth();
+
+document.addEventListener("click", async (event) => {
+  const copyButton = event.target.closest("[data-copy-order-id]");
+
+  if (!copyButton) {
+    return;
+  }
+
+  const orderId = copyButton.getAttribute("data-copy-order-id") || "";
+
+  if (!navigator.clipboard?.writeText) {
+    showToast("当前浏览器不支持自动复制，请手动复制订单号");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(orderId);
+    showToast("订单号已复制");
+  } catch {
+    showToast("复制失败，请手动复制订单号");
+  }
+});
 
 document.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-demo-order]");

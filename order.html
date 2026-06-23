@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="冒泡维C AI Lab 的数字商品、自动化模板和独立开发资源展示。">
+  <meta name="description" content="冒泡维C AI Lab 演示订单查询页。">
   <meta name="theme-color" content="#05070d">
-  <title>数字商品 · 冒泡维C AI Lab</title>
+  <title>订单查询 · 冒泡维C AI Lab</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon-32x32.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -35,19 +35,30 @@
 
   <main class="page-main">
     <section class="section page-hero">
-      <p class="eyebrow">Digital Products</p>
-      <h1>数字商品与 AI 自动化资源</h1>
-      <p>这里用于展示后续会正式上架的模板、工作流、组件和咨询服务。当前为静态商品骨架，不包含真实交易流程。</p>
+      <p class="eyebrow">Order Lookup</p>
+      <h1>订单查询</h1>
+      <p>当前为演示订单系统，尚未接入真实支付和自动发货。</p>
     </section>
 
-    <section class="section page-section">
-      <div class="product-grid" data-product-list></div>
+    <section class="section order-lookup-section" data-order-lookup>
+      <article class="order-lookup-card">
+        <form class="demo-form order-lookup-form" data-order-lookup-form>
+          <label>
+            <span>订单号</span>
+            <input type="text" name="orderId" placeholder="例如 LAB-20260624-ABC123" autocomplete="off">
+          </label>
+          <button class="button primary" type="submit">查询订单</button>
+        </form>
+        <div class="order-lookup-result" data-order-lookup-result>
+          <p>请输入订单号进行查询。不会显示真实卡密或完整用户邮箱。</p>
+        </div>
+      </article>
     </section>
   </main>
 
   <footer class="footer">
     <p>© <span id="year"></span> maopaoweic.top</p>
-    <p>个人 AI 实验室 / 数字商品展示 / 自动化资源</p>
+    <p>订单系统当前仅用于演示查询。</p>
   </footer>
   <script src="/site-data.js"></script>
   <script src="/script.js"></script>

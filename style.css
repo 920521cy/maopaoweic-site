@@ -1041,10 +1041,104 @@ h1 {
   font-size: inherit;
 }
 
+.demo-order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
 .order-status-pill {
   border-color: rgba(134, 255, 188, 0.28);
   color: var(--green);
   background: rgba(134, 255, 188, 0.08);
+}
+
+.order-lookup-section {
+  padding: 28px 0 88px;
+}
+
+.order-lookup-card,
+.order-result-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.22);
+}
+
+.order-lookup-card {
+  display: grid;
+  gap: 18px;
+  padding: clamp(22px, 5vw, 30px);
+}
+
+.order-lookup-form {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.order-lookup-form .button {
+  min-width: 138px;
+}
+
+.order-lookup-result {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.order-lookup-result > p {
+  margin: 0;
+}
+
+.order-result-card {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.order-result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.order-result-header h2 {
+  margin: 0;
+  font-size: clamp(22px, 4vw, 32px);
+}
+
+.order-result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.order-result-grid p {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.order-result-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.order-result-grid strong {
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+
+.order-result-note {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
 }
 
 .detail-grid,
@@ -1979,6 +2073,22 @@ h1 {
 
   .admin-actions .compact-button {
     width: auto;
+  }
+
+  .order-lookup-form,
+  .order-result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .order-result-header,
+  .demo-order-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .order-lookup-form .button,
+  .demo-order-actions .button {
+    width: 100%;
   }
 
   .lab-track {
