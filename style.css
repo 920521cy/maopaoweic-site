@@ -1208,6 +1208,92 @@ h1 {
   line-height: 1.5;
 }
 
+.admin-db-stats-panel .admin-panel-header p:not(.eyebrow) {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.admin-db-grid,
+.admin-distribution-grid {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.admin-db-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-distribution-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-top: 0;
+}
+
+.admin-distribution-grid section,
+.admin-db-state {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-distribution-grid section {
+  padding: 16px;
+}
+
+.admin-distribution-grid h3 {
+  margin: 0 0 12px;
+  color: var(--muted-strong);
+  font-size: 15px;
+}
+
+.admin-status-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 38px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 8px;
+  background: rgba(3, 8, 16, 0.34);
+}
+
+.admin-status-row span {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.admin-status-row strong {
+  color: var(--green);
+  font-size: 16px;
+}
+
+.admin-empty-state,
+.admin-db-state p,
+.admin-db-timestamp {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.admin-db-state {
+  margin: 18px;
+  padding: 16px;
+}
+
+.admin-db-timestamp {
+  padding: 0 18px 18px;
+  font-size: 13px;
+}
+
 .admin-panel {
   overflow: hidden;
 }
@@ -1714,6 +1800,7 @@ h1 {
   }
 
   .admin-stats-grid,
+  .admin-db-grid,
   .admin-roadmap-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1796,6 +1883,8 @@ h1 {
   }
 
   .admin-stats-grid,
+  .admin-db-grid,
+  .admin-distribution-grid,
   .admin-roadmap-grid {
     grid-template-columns: 1fr;
   }

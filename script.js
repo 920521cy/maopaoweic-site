@@ -134,6 +134,121 @@ const updateDbHealthStatus = (message, state = "pending") => {
   updateHealthStatus("[data-db-health-status]", message, state);
 };
 
+const renderStatusDistribution = (items = {}) => {
+  const entries = Array.isArray(items)
+    ? items.map((item) => [item?.status || "unknown", item?.count ?? 0])
+    : Object.entries(items);
+
+  if (!entries.length) {
+    return `<p class="admin-empty-state">暂无状态统计数据。</p>`;
+  }
+
+  return `
+    <div class="admin-status-list">
+      ${entries.map(([status, count]) => `
+        <div class="admin-status-row">
+          <span>${escapeHtml(status)}</span>
+          <strong>${escapeHtml(Number(count) || 0)}</strong>
+        </div>
+      `).join("")}
+    </div>
+  `;
+};
+
+const renderAdminDbStats = async () => {
+  const container = document.querySelector("[data-admin-db-stats]");
+
+  if (!container) {
+    return;
+  }
+
+  const renderUnavailable = () => {
+    container.innerHTML = `
+      <div class="admin-panel-header">
+        <div>
+          <p class="eyebrow">Real D1 Stats</p>
+          <h2>真实 D1 统计数据</h2>
+          <p>演示阶段，尚未接入管理员登录。</p>
+        </div>
+        <span class="api-status-pill" data-state="offline">当前环境无法读取数据库统计，可能是本地预览或 D1 未绑定</span>
+      </div>
+      <div class="admin-db-state">
+        <p>静态演示区域仍可正常查看；真实数据库统计需要部署到 Cloudflare Pages 并绑定 D1 后验证。</p>
+      </div>
+    `;
+  };
+
+  if (!window.fetch) {
+    renderUnavailable();
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/admin/stats", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true) {
+      renderUnavailable();
+      return;
+    }
+
+    const totals = data.stats?.totals || {};
+
+    container.innerHTML = `
+      <div class="admin-panel-header">
+        <div>
+          <p class="eyebrow">Real D1 Stats</p>
+          <h2>真实 D1 统计数据</h2>
+          <p>演示阶段，尚未接入管理员登录。</p>
+        </div>
+        <span class="api-status-pill" data-state="connected">已连接真实 D1 统计</span>
+      </div>
+
+      <div class="admin-db-grid">
+        <article class="admin-stat-card">
+          <span>商品表记录数</span>
+          <strong>${escapeHtml(totals.products ?? 0)}</strong>
+          <p>products</p>
+        </article>
+        <article class="admin-stat-card">
+          <span>订单表记录数</span>
+          <strong>${escapeHtml(totals.orders ?? 0)}</strong>
+          <p>orders</p>
+        </article>
+        <article class="admin-stat-card">
+          <span>卡密表记录数</span>
+          <strong>${escapeHtml(totals.cardKeys ?? 0)}</strong>
+          <p>card_keys</p>
+        </article>
+        <article class="admin-stat-card">
+          <span>管理日志记录数</span>
+          <strong>${escapeHtml(totals.adminLogs ?? 0)}</strong>
+          <p>admin_logs</p>
+        </article>
+      </div>
+
+      <div class="admin-distribution-grid">
+        <section>
+          <h3>卡密状态分布</h3>
+          ${renderStatusDistribution(data.stats?.cardKeyStatus)}
+        </section>
+        <section>
+          <h3>订单状态分布</h3>
+          ${renderStatusDistribution(data.stats?.orderStatus)}
+        </section>
+      </div>
+
+      <p class="admin-db-timestamp">更新时间：${escapeHtml(data.timestamp || "未知")}</p>
+    `;
+  } catch {
+    renderUnavailable();
+  }
+};
+
 const checkApiHealth = async () => {
   const status = document.querySelector("[data-api-health-status]");
 
@@ -360,6 +475,20 @@ const renderAdminDemo = () => {
       <span class="api-status-pill" data-db-health-status data-state="pending">检测中</span>
     </article>
 
+    <article class="admin-panel admin-db-stats-panel" data-admin-db-stats>
+      <div class="admin-panel-header">
+        <div>
+          <p class="eyebrow">Real D1 Stats</p>
+          <h2>真实 D1 统计数据</h2>
+          <p>演示阶段，尚未接入管理员登录。</p>
+        </div>
+        <span class="api-status-pill" data-state="pending">检测中</span>
+      </div>
+      <div class="admin-db-state">
+        <p>正在读取数据库统计。</p>
+      </div>
+    </article>
+
     <article class="admin-panel">
       <div class="admin-panel-header">
         <div>
@@ -521,6 +650,7 @@ renderProductList();
 renderProductDetail();
 renderDashboardDemo();
 renderAdminDemo();
+renderAdminDbStats();
 checkApiHealth();
 checkDbHealth();
 
