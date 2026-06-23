@@ -220,6 +220,42 @@ const loadAdminCardKeysFromApi = async () => {
   }
 };
 
+const reserveDemoCardForOrder = async (orderId) => {
+  const normalizedOrderId = String(orderId || "").trim();
+
+  if (!normalizedOrderId || !window.fetch) {
+    return null;
+  }
+
+  try {
+    const response = await fetch("/api/admin/reserve-card", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ orderId: normalizedOrderId })
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true || !data.reservation) {
+      return {
+        ok: false,
+        status: response.status,
+        message: data?.message || "Unable to reserve demo card key"
+      };
+    }
+
+    return {
+      ok: true,
+      message: data.message || "演示卡密库存已为该订单预留，当前不会发放真实卡密",
+      reservation: data.reservation
+    };
+  } catch {
+    return null;
+  }
+};
+
 const fetchOrderDetail = async (orderId) => {
   const normalizedOrderId = String(orderId || "").trim();
 
@@ -288,7 +324,15 @@ const renderDemoButton = (label, message) => `
   <button class="button secondary compact-button" type="button" data-demo-action="${escapeHtml(message)}">${escapeHtml(label)}</button>
 `;
 
-const renderAdminStatus = (value) => `<span class="status-pill">${escapeHtml(value || "演示数据")}</span>`;
+const statusClassName = (value) => String(value || "")
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-|-$/g, "");
+
+const renderAdminStatus = (value) => {
+  const statusClass = statusClassName(value);
+  return `<span class="status-pill${statusClass ? ` admin-status-${statusClass}` : ""}">${escapeHtml(value || "演示数据")}</span>`;
+};
 
 const renderAdminProductRows = (items = products, sourceLabel = "本地演示数据") => {
   if (!items.length) {
@@ -347,22 +391,27 @@ const renderAdminOrderRows = (items = demoOrders, sourceLabel = "本地演示订
     return `<tr><td colspan="7">暂无订单数据。</td></tr>`;
   }
 
-  return items.map((order) => `
-    <tr>
-      <td><strong>${escapeHtml(order.id)}</strong></td>
-      <td>${escapeHtml(order.productTitle)}</td>
-      <td>${escapeHtml(order.amount || "¥0")}</td>
-      <td>${renderAdminStatus(order.status)}</td>
-      <td>${escapeHtml(order.createdAt || "待接入订单系统")}</td>
-      <td><span class="status-pill admin-source-pill">${escapeHtml(sourceLabel)}</span></td>
-      <td>
-        <div class="admin-actions">
-          ${renderDemoButton("查看订单", "订单详情功能将在后台订单接口完善后开放")}
-          ${renderDemoButton("标记发货", "发货功能将在权限系统完成后开放")}
-        </div>
-      </td>
-    </tr>
-  `).join("");
+  return items.map((order) => {
+    const canReserveCard = String(order.status || "").toLowerCase() === "demo";
+
+    return `
+      <tr>
+        <td><strong>${escapeHtml(order.id)}</strong></td>
+        <td>${escapeHtml(order.productTitle)}</td>
+        <td>${escapeHtml(order.amount || "¥0")}</td>
+        <td>${renderAdminStatus(order.status)}</td>
+        <td>${escapeHtml(order.createdAt || "待接入订单系统")}</td>
+        <td><span class="status-pill admin-source-pill">${escapeHtml(sourceLabel)}</span></td>
+        <td>
+          <div class="admin-actions">
+            ${renderDemoButton("查看订单", "订单详情功能将在后台订单接口完善后开放")}
+            ${canReserveCard ? `<button class="button secondary compact-button" type="button" data-reserve-card-order="${escapeHtml(order.id)}">预留卡密</button>` : ""}
+            ${renderDemoButton("标记发货", "发货功能将在权限系统完成后开放")}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
 };
 
 const renderAdminOrderManagement = async () => {
@@ -725,26 +774,33 @@ const renderProductDetail = async () => {
   `;
 };
 
-const renderOrderResult = (order) => `
-  <article class="order-result-card">
-    <div class="order-result-header">
-      <div>
-        <p class="eyebrow">Order Detail</p>
-        <h2>${escapeHtml(order.id)}</h2>
+const renderOrderResult = (order) => {
+  const isDemoOrder = String(order.status || "").toLowerCase() === "demo";
+  const note = isDemoOrder
+    ? "当前为演示订单，尚未接入真实支付和自动发货。不会显示或发放真实卡密。"
+    : "当前为订单查询结果，不显示真实卡密或完整用户邮箱。";
+
+  return `
+    <article class="order-result-card">
+      <div class="order-result-header">
+        <div>
+          <p class="eyebrow">Order Detail</p>
+          <h2>${escapeHtml(order.id)}</h2>
+        </div>
+        <span class="status-pill order-status-pill">${escapeHtml(order.status || "demo")}</span>
       </div>
-      <span class="status-pill order-status-pill">${escapeHtml(order.status || "demo")}</span>
-    </div>
-    <div class="order-result-grid">
-      <p><span>商品名称</span><strong>${escapeHtml(order.productTitle)}</strong></p>
-      <p><span>金额</span><strong>${escapeHtml(order.amount || "¥0")}</strong></p>
-      <p><span>订单状态</span><strong>${escapeHtml(order.status || "demo")}</strong></p>
-      <p><span>支付方式</span><strong>${escapeHtml(order.paymentProvider || "demo")}</strong></p>
-      <p><span>创建时间</span><strong>${escapeHtml(order.createdAt || "未知")}</strong></p>
-      <p><span>发货状态</span><strong>${escapeHtml(order.deliveryStatus || "订单状态待确认")}</strong></p>
-    </div>
-    <p class="order-result-note">当前为演示订单查询，不显示真实卡密或完整用户邮箱。</p>
-  </article>
-`;
+      <div class="order-result-grid">
+        <p><span>商品名称</span><strong>${escapeHtml(order.productTitle)}</strong></p>
+        <p><span>金额</span><strong>${escapeHtml(order.amount || "¥0")}</strong></p>
+        <p><span>订单状态</span><strong>${escapeHtml(order.status || "demo")}</strong></p>
+        <p><span>支付方式</span><strong>${escapeHtml(order.paymentProvider || "demo")}</strong></p>
+        <p><span>创建时间</span><strong>${escapeHtml(order.createdAt || "未知")}</strong></p>
+        <p><span>发货状态</span><strong>${escapeHtml(order.deliveryStatus || "订单状态待确认")}</strong></p>
+      </div>
+      <p class="order-result-note">${escapeHtml(note)}</p>
+    </article>
+  `;
+};
 
 const renderOrderLookup = () => {
   const container = document.querySelector("[data-order-lookup]");
@@ -1136,6 +1192,42 @@ document.addEventListener("click", async (event) => {
   }
 
   showToast(result.message);
+});
+
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-reserve-card-order]");
+
+  if (!button) {
+    return;
+  }
+
+  const orderId = button.getAttribute("data-reserve-card-order") || "";
+  const originalText = button.textContent;
+
+  button.disabled = true;
+  button.textContent = "正在预留";
+
+  const result = await reserveDemoCardForOrder(orderId);
+
+  button.disabled = false;
+  button.textContent = originalText;
+
+  if (result?.ok) {
+    showToast("演示卡密库存已预留");
+    await Promise.all([
+      renderAdminOrderManagement(),
+      renderAdminCardManagement(),
+      renderAdminDbStats()
+    ]);
+    return;
+  }
+
+  if (result?.status === 409) {
+    showToast("该商品暂无可用演示卡密库存");
+    return;
+  }
+
+  showToast("演示卡密预留暂时不可用，请稍后再试");
 });
 
 document.addEventListener("click", (event) => {
