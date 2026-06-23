@@ -392,7 +392,8 @@ const renderAdminOrderRows = (items = demoOrders, sourceLabel = "本地演示订
   }
 
   return items.map((order) => {
-    const canReserveCard = String(order.status || "").toLowerCase() === "demo";
+    const normalizedStatus = String(order.status || "").trim().toLowerCase();
+    const canReserveCard = sourceLabel === "D1 订单数据" && normalizedStatus === "demo";
 
     return `
       <tr>
@@ -405,7 +406,7 @@ const renderAdminOrderRows = (items = demoOrders, sourceLabel = "本地演示订
         <td>
           <div class="admin-actions">
             ${renderDemoButton("查看订单", "订单详情功能将在后台订单接口完善后开放")}
-            ${canReserveCard ? `<button class="button secondary compact-button" type="button" data-reserve-card-order="${escapeHtml(order.id)}">预留卡密</button>` : ""}
+            ${canReserveCard ? `<button class="button secondary compact-button" type="button" data-reserve-card-order="${escapeHtml(order.id)}" data-order-id="${escapeHtml(order.id)}">预留卡密</button>` : ""}
             ${renderDemoButton("标记发货", "发货功能将在权限系统完成后开放")}
           </div>
         </td>
@@ -1201,7 +1202,7 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
-  const orderId = button.getAttribute("data-reserve-card-order") || "";
+  const orderId = button.getAttribute("data-order-id") || button.getAttribute("data-reserve-card-order") || "";
   const originalText = button.textContent;
 
   button.disabled = true;
@@ -1227,7 +1228,12 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
-  showToast("演示卡密预留暂时不可用，请稍后再试");
+  if (result?.status === 404) {
+    showToast("订单不存在");
+    return;
+  }
+
+  showToast("预留卡密失败，请稍后再试");
 });
 
 document.addEventListener("click", (event) => {
