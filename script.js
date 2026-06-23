@@ -21,6 +21,98 @@ const renderTagList = (tags = []) => tags.map((tag) => `<span>${escapeHtml(tag)}
 
 const renderListItems = (items = []) => items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
 
+const parseArrayValue = (value) => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value !== "string" || !value) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const formatProductPrice = (value) => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return `¥${value}`;
+  }
+
+  const text = String(value ?? "").trim();
+
+  if (!text) {
+    return "¥0";
+  }
+
+  return text.startsWith("¥") ? text : `¥${text}`;
+};
+
+const normalizeProductFromApi = (product = {}) => ({
+  id: product.id || "",
+  slug: product.slug || "",
+  title: product.title || "",
+  description: product.description || "",
+  longDescription: product.longDescription || product.long_description || "",
+  price: formatProductPrice(product.price),
+  tags: parseArrayValue(product.tags),
+  category: product.category || "",
+  delivery: parseArrayValue(product.delivery),
+  audience: parseArrayValue(product.audience),
+  status: product.status || "published",
+  featured: Boolean(product.featured)
+});
+
+const loadProductsFromApi = async () => {
+  if (!window.fetch) {
+    return null;
+  }
+
+  try {
+    const response = await fetch("/api/products", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true || !Array.isArray(data.products)) {
+      return null;
+    }
+
+    return data.products.map(normalizeProductFromApi);
+  } catch {
+    return null;
+  }
+};
+
+const loadProductDetailFromApi = async (slug) => {
+  if (!slug || !window.fetch) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`/api/products/${encodeURIComponent(slug)}`, {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true || !data.product) {
+      return null;
+    }
+
+    return normalizeProductFromApi(data.product);
+  } catch {
+    return null;
+  }
+};
+
 const renderProductCard = (product) => `
   <article class="product-card${product.featured ? " featured" : ""}">
     <div class="card-topline">
@@ -304,28 +396,32 @@ const checkDbHealth = async () => {
   }
 };
 
-const renderFeaturedProducts = () => {
+const renderFeaturedProducts = async () => {
   const container = document.querySelector("[data-featured-products]");
 
   if (!container) {
     return;
   }
 
-  const featuredProducts = products.filter((product) => product.featured).slice(0, 3);
+  const apiProducts = await loadProductsFromApi();
+  const sourceProducts = apiProducts?.length ? apiProducts : products;
+  const featuredProducts = sourceProducts.filter((product) => product.featured).slice(0, 3);
   container.innerHTML = featuredProducts.map(renderProductCard).join("");
 };
 
-const renderProductList = () => {
+const renderProductList = async () => {
   const container = document.querySelector("[data-product-list]");
 
   if (!container) {
     return;
   }
 
-  container.innerHTML = products.map(renderProductCard).join("");
+  const apiProducts = await loadProductsFromApi();
+  const sourceProducts = apiProducts?.length ? apiProducts : products;
+  container.innerHTML = sourceProducts.map(renderProductCard).join("");
 };
 
-const renderProductDetail = () => {
+const renderProductDetail = async () => {
   const container = document.querySelector("[data-product-detail]");
 
   if (!container) {
@@ -334,8 +430,17 @@ const renderProductDetail = () => {
 
   const params = new URLSearchParams(window.location.search);
   const slug = params.get("slug");
-  const defaultProduct = products.find((product) => product.featured) || products[0];
-  const product = slug ? products.find((item) => item.slug === slug) : defaultProduct;
+  let product = null;
+
+  if (slug) {
+    product = await loadProductDetailFromApi(slug) || products.find((item) => item.slug === slug);
+  } else {
+    const apiProducts = await loadProductsFromApi();
+    const apiDefaultProduct = apiProducts?.find((item) => item.featured) || apiProducts?.[0];
+    product = apiDefaultProduct
+      ? await loadProductDetailFromApi(apiDefaultProduct.slug) || apiDefaultProduct
+      : products.find((item) => item.featured) || products[0];
+  }
 
   if (!product) {
     container.innerHTML = `
@@ -494,6 +599,7 @@ const renderAdminDemo = () => {
         <div>
           <p class="eyebrow">Products</p>
           <h2>商品管理</h2>
+          <p>商品数据已支持 D1 只读 API，后台编辑功能尚未开放。</p>
         </div>
         <span class="status-pill">静态数据</span>
       </div>
