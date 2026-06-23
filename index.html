@@ -31,7 +31,6 @@
       <a href="/#projects">项目</a>
       <a href="/products.html">商品</a>
       <a href="/messages.html">留言</a>
-      <a href="/changelog.html">更新日志</a>
       <a href="/login.html">登录</a>
     </nav>
   </header>
@@ -189,47 +188,7 @@
         <p>围绕 AI 自动化、独立开发和轻量工具沉淀可复用资源，当前为静态展示骨架。</p>
       </div>
 
-      <div class="product-grid preview-grid">
-        <article class="product-card">
-          <div class="card-topline">
-            <span>Automation</span>
-            <strong>¥29</strong>
-          </div>
-          <h3>n8n 内容流模板</h3>
-          <p>适合把选题、整理、发布提醒拆成自动化流程的入门模板包。</p>
-          <div class="tag-list">
-            <span>n8n workflow</span>
-            <span>模板</span>
-          </div>
-          <a class="button secondary compact-button" href="/product.html">查看详情</a>
-        </article>
-        <article class="product-card">
-          <div class="card-topline">
-            <span>Web Lab</span>
-            <strong>¥39</strong>
-          </div>
-          <h3>AI Lab 页面组件</h3>
-          <p>深色科技感卡片、导航和展示区组件，用于个人项目站快速搭建。</p>
-          <div class="tag-list">
-            <span>HTML/CSS</span>
-            <span>组件</span>
-          </div>
-          <a class="button secondary compact-button" href="/product.html">查看详情</a>
-        </article>
-        <article class="product-card">
-          <div class="card-topline">
-            <span>Guide</span>
-            <strong>¥19</strong>
-          </div>
-          <h3>Codex 协作记录包</h3>
-          <p>记录从需求拆解、页面实现到上线检查的 AI 协作流程示例。</p>
-          <div class="tag-list">
-            <span>教程</span>
-            <span>AI Tools</span>
-          </div>
-          <a class="button secondary compact-button" href="/product.html">查看详情</a>
-        </article>
-      </div>
+      <div class="product-grid preview-grid" data-featured-products></div>
 
       <div class="section-actions">
         <a class="button primary" href="/products.html">查看全部商品</a>
@@ -340,6 +299,7 @@
   </footer>
 
   <script src="./frontend/canvas-effects/cloth-lab.js"></script>
+  <script src="./site-data.js"></script>
   <script src="./script.js"></script>
 </body>
 </html>

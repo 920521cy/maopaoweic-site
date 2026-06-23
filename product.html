@@ -29,63 +29,17 @@
       <a href="/#projects">项目</a>
       <a href="/products.html">商品</a>
       <a href="/messages.html">留言</a>
-      <a href="/changelog.html">更新日志</a>
       <a href="/login.html">登录</a>
     </nav>
   </header>
 
-  <main class="page-main">
-    <section class="section product-detail">
-      <div class="detail-copy">
-        <p class="eyebrow">Product Detail</p>
-        <h1>n8n 内容流模板</h1>
-        <p>一个用于演示数字商品详情页的信息结构样例，未来可替换为真实模板说明、截图和交付文件列表。</p>
-        <div class="tag-list">
-          <span>n8n workflow</span>
-          <span>AI 自动化</span>
-          <span>演示商品</span>
-        </div>
-      </div>
-      <aside class="purchase-panel">
-        <span>示例价格</span>
-        <strong>¥29</strong>
-        <p>当前仅展示前端购买入口，不接支付、不创建订单。</p>
-        <button class="button primary" type="button" data-demo-action="支付系统正在开发中">购买按钮</button>
-      </aside>
-    </section>
-
-    <section class="section detail-grid">
-      <article class="info-card">
-        <h2>商品介绍</h2>
-        <p>该模板用于把内容生产流程拆成可执行节点，方便后续接入真实的自动化平台和个人知识库。</p>
-      </article>
-      <article class="info-card">
-        <h2>适合人群</h2>
-        <ul>
-          <li>想尝试 n8n 自动化的个人创作者</li>
-          <li>需要整理 AI 实验记录的独立开发者</li>
-          <li>希望把重复流程模板化的站点维护者</li>
-        </ul>
-      </article>
-      <article class="info-card">
-        <h2>交付内容</h2>
-        <ul>
-          <li>工作流结构说明</li>
-          <li>节点配置清单</li>
-          <li>使用步骤和调整建议</li>
-        </ul>
-      </article>
-      <article class="info-card">
-        <h2>购买须知</h2>
-        <p>当前页面为静态演示，不会产生真实订单。未来接入支付和卡密系统后，会在此补充交付与售后规则。</p>
-      </article>
-    </section>
-  </main>
+  <main class="page-main" data-product-detail></main>
 
   <footer class="footer">
     <p>© <span id="year"></span> maopaoweic.top</p>
     <p>非商业正式官网，个人实验站</p>
   </footer>
+  <script src="/site-data.js"></script>
   <script src="/script.js"></script>
 </body>
 </html>
