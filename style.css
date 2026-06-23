@@ -621,6 +621,7 @@ h1 {
 
 .intro-section,
 .showcase-section,
+.resources-section,
 .labs-section,
 .workflow-section,
 .contact-section,
@@ -820,6 +821,371 @@ h1 {
   color: var(--text);
 }
 
+.resources-section {
+  padding: 88px 0;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.product-card,
+.info-card,
+.auth-card,
+.purchase-panel,
+.timeline-item {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.22);
+}
+
+.product-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  min-height: 286px;
+  flex-direction: column;
+  padding: 24px;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.product-card.featured {
+  border-color: rgba(54, 226, 255, 0.28);
+}
+
+.product-card.featured::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(135deg, rgba(54, 226, 255, 0.12), transparent 42%);
+}
+
+.product-card:hover,
+.info-card:hover,
+.timeline-item:hover {
+  border-color: var(--line-strong);
+  background: var(--panel-strong);
+  transform: translateY(-4px);
+}
+
+.product-card h3 {
+  position: relative;
+  z-index: 1;
+  margin: 42px 0 12px;
+  font-size: 22px;
+}
+
+.product-card p {
+  position: relative;
+  z-index: 1;
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.tag-list {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 22px;
+}
+
+.tag-list span,
+.status-pill {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border: 1px solid rgba(54, 226, 255, 0.22);
+  border-radius: 999px;
+  color: var(--cyan);
+  background: rgba(54, 226, 255, 0.08);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.compact-button {
+  width: fit-content;
+  min-height: 40px;
+  margin-top: auto;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.page-main {
+  min-height: calc(100vh - 140px);
+}
+
+.page-hero,
+.page-section,
+.legal-page,
+.timeline {
+  padding: 78px 0;
+  border-top: 1px solid var(--line);
+}
+
+.page-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.page-hero::before {
+  position: absolute;
+  top: 10%;
+  right: 4%;
+  z-index: -1;
+  width: min(42vw, 460px);
+  height: min(42vw, 460px);
+  border-radius: 50%;
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(circle, rgba(54, 226, 255, 0.18), transparent 58%),
+    radial-gradient(circle at 68% 35%, rgba(183, 156, 255, 0.14), transparent 48%);
+  filter: blur(12px);
+}
+
+.page-hero h1,
+.auth-card h1,
+.legal-page h1,
+.product-detail h1 {
+  max-width: 860px;
+  margin-bottom: 18px;
+  font-size: clamp(42px, 7vw, 78px);
+}
+
+.page-hero p:not(.eyebrow),
+.auth-card p,
+.legal-content p,
+.info-card p,
+.timeline-item p,
+.purchase-panel p,
+.detail-copy p {
+  color: var(--muted);
+  line-height: 1.78;
+}
+
+.page-hero p:not(.eyebrow) {
+  max-width: 760px;
+  font-size: 18px;
+}
+
+.split-hero,
+.product-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.68fr);
+  gap: 34px;
+  align-items: start;
+}
+
+.product-detail {
+  padding: 78px 0 54px;
+  border-top: 1px solid var(--line);
+}
+
+.purchase-panel {
+  display: grid;
+  gap: 14px;
+  padding: 24px;
+}
+
+.purchase-panel span {
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.purchase-panel strong {
+  color: var(--green);
+  font-size: clamp(34px, 6vw, 54px);
+  line-height: 1;
+}
+
+.detail-grid,
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  padding: 28px 0 88px;
+}
+
+.portal-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.info-card,
+.timeline-item {
+  padding: 24px;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.info-card h2,
+.timeline-item h2 {
+  margin-bottom: 12px;
+  font-size: 24px;
+}
+
+.info-card ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.auth-main {
+  display: grid;
+  width: min(560px, calc(100% - 40px));
+  min-height: calc(100vh - 170px);
+  margin: 0 auto;
+  place-items: center;
+  padding: 48px 0 78px;
+}
+
+.auth-card {
+  width: 100%;
+  padding: clamp(26px, 6vw, 42px);
+}
+
+.auth-card h1 {
+  font-size: clamp(38px, 8vw, 66px);
+}
+
+.demo-form {
+  display: grid;
+  gap: 15px;
+}
+
+.demo-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted-strong);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.demo-form input,
+.demo-form textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.055);
+  font: inherit;
+  outline: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.demo-form input {
+  min-height: 48px;
+  padding: 0 14px;
+}
+
+.demo-form textarea {
+  min-height: 142px;
+  padding: 14px;
+  resize: vertical;
+}
+
+.demo-form input:focus,
+.demo-form textarea:focus {
+  border-color: rgba(54, 226, 255, 0.48);
+  background: rgba(255, 255, 255, 0.075);
+  box-shadow: 0 0 0 3px rgba(54, 226, 255, 0.1);
+}
+
+.demo-notice {
+  min-height: 26px;
+  margin-bottom: 0;
+  color: var(--green);
+  font-weight: 900;
+}
+
+.auth-link {
+  margin: 20px 0 0;
+  color: var(--muted);
+}
+
+.auth-link a,
+.footer a {
+  color: var(--green);
+  font-weight: 900;
+}
+
+.auth-link a:hover,
+.footer a:hover {
+  color: var(--text);
+}
+
+.legal-content {
+  max-width: 880px;
+  padding: clamp(24px, 5vw, 36px);
+}
+
+.legal-content h2:not(:first-child) {
+  margin-top: 28px;
+}
+
+.timeline {
+  display: grid;
+  gap: 16px;
+}
+
+.timeline-item span {
+  color: var(--cyan);
+  font-weight: 900;
+}
+
+.toast-root {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 80;
+  display: grid;
+  width: min(360px, calc(100vw - 32px));
+  gap: 10px;
+  pointer-events: none;
+}
+
+.site-toast {
+  position: relative;
+  overflow: hidden;
+  padding: 13px 15px;
+  border: 1px solid rgba(54, 226, 255, 0.26);
+  border-radius: 8px;
+  color: var(--text);
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035)),
+    rgba(5, 10, 20, 0.86);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34), 0 0 30px rgba(54, 226, 255, 0.12);
+  backdrop-filter: blur(16px);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.55;
+  animation: toastIn 180ms ease-out;
+}
+
+.site-toast::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  content: "";
+  background: linear-gradient(180deg, var(--cyan), var(--green), var(--violet));
+}
+
+.site-toast.is-hiding {
+  animation: toastOut 260ms ease-in forwards;
+}
+
 .lab-track {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1004,6 +1370,25 @@ h1 {
   }
 }
 
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translate3d(12px, 10px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes toastOut {
+  to {
+    opacity: 0;
+    transform: translate3d(12px, 10px, 0);
+  }
+}
+
 @keyframes heroGlow {
   0% {
     opacity: 0.5;
@@ -1066,7 +1451,9 @@ h1 {
 @media (max-width: 980px) {
   .hero,
   .intro-section,
-  .contact-card {
+  .contact-card,
+  .split-hero,
+  .product-detail {
     grid-template-columns: 1fr;
   }
 
@@ -1082,6 +1469,11 @@ h1 {
   }
 
   .lab-track {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .product-grid,
+  .portal-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -1119,7 +1511,10 @@ h1 {
   .highlights,
   .project-grid,
   .workflow-grid,
-  .about-lab-cards {
+  .about-lab-cards,
+  .product-grid,
+  .detail-grid,
+  .portal-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -1134,6 +1529,11 @@ h1 {
   .cloth-lab-panel,
   .highlight-card,
   .project-card,
+  .product-card,
+  .info-card,
+  .auth-card,
+  .purchase-panel,
+  .timeline-item,
   .lab-track article,
   .workflow-grid article,
   .contact-card {
@@ -1160,5 +1560,24 @@ h1 {
   .footer {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .section-actions,
+  .section-actions .button,
+  .demo-form .button,
+  .purchase-panel .button {
+    width: 100%;
+  }
+
+  .toast-root {
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    width: auto;
+  }
+
+  .site-toast {
+    padding: 12px 14px;
+    font-size: 13px;
   }
 }

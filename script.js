@@ -5,6 +5,40 @@ const navItems = document.querySelectorAll(".nav-links a");
 const sections = document.querySelectorAll("main section[id]");
 const clothLabRoot = document.querySelector("[data-cloth-lab]");
 
+const showToast = (message) => {
+  if (!message) {
+    return;
+  }
+
+  let toastRoot = document.querySelector("[data-toast-root]");
+
+  if (!toastRoot) {
+    toastRoot = document.createElement("div");
+    toastRoot.className = "toast-root";
+    toastRoot.setAttribute("data-toast-root", "");
+    toastRoot.setAttribute("aria-live", "polite");
+    toastRoot.setAttribute("aria-atomic", "false");
+    document.body.appendChild(toastRoot);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = "site-toast";
+  toast.textContent = message;
+  toastRoot.appendChild(toast);
+
+  window.setTimeout(() => {
+    toast.classList.add("is-hiding");
+  }, 2400);
+
+  window.setTimeout(() => {
+    toast.remove();
+
+    if (!toastRoot.children.length) {
+      toastRoot.remove();
+    }
+  }, 2850);
+};
+
 if (year) {
   year.textContent = new Date().getFullYear();
 }
@@ -32,6 +66,28 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
   });
 });
 
+document.querySelectorAll("[data-demo-action]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const message = button.getAttribute("data-demo-action") || "功能正在开发中";
+    showToast(message);
+  });
+});
+
+document.querySelectorAll("[data-demo-form]").forEach((form) => {
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const message = form.getAttribute("data-demo-message") || "功能正在开发中，当前为演示提交";
+    const notice = form.querySelector(".demo-notice");
+
+    if (notice) {
+      notice.textContent = message;
+    }
+
+    showToast(message);
+  });
+});
+
 document.querySelectorAll(".faq-list details").forEach((item) => {
   item.addEventListener("toggle", () => {
     if (!item.open) {
@@ -48,6 +104,7 @@ document.querySelectorAll(".faq-list details").forEach((item) => {
 
 const updateActiveNav = () => {
   let currentId = "";
+  const currentPath = window.location.pathname.replace(/\/$/, "") || "/";
 
   sections.forEach((section) => {
     const rect = section.getBoundingClientRect();
@@ -58,7 +115,13 @@ const updateActiveNav = () => {
   });
 
   navItems.forEach((item) => {
-    item.classList.toggle("is-active", item.getAttribute("href") === `#${currentId}`);
+    const href = item.getAttribute("href") || "";
+    const linkUrl = new URL(href, window.location.origin);
+    const linkPath = linkUrl.pathname.replace(/\/$/, "") || "/";
+    const hashMatches = currentPath === "/" && linkUrl.hash === `#${currentId}`;
+    const pathMatches = linkPath === currentPath && !linkUrl.hash;
+
+    item.classList.toggle("is-active", hashMatches || pathMatches);
   });
 };
 

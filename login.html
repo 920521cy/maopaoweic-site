@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="冒泡维C AI Lab 用户登录演示页。">
+  <meta name="theme-color" content="#05070d">
+  <title>登录 · 冒泡维C AI Lab</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon-32x32.png" type="image/png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/#home" aria-label="冒泡维C 首页">
+      <span class="brand-mark">C</span>
+      <span>冒泡维C</span>
+    </a>
+    <button class="menu-button" type="button" aria-label="打开导航" aria-expanded="false">
+      <span></span>
+      <span></span>
+    </button>
+    <nav class="nav-links" aria-label="主导航">
+      <a href="/#home">首页</a>
+      <a href="/#projects">项目</a>
+      <a href="/products.html">商品</a>
+      <a href="/messages.html">留言</a>
+      <a href="/changelog.html">更新日志</a>
+      <a href="/login.html">登录</a>
+    </nav>
+  </header>
+
+  <main class="page-main auth-main">
+    <section class="auth-card">
+      <p class="eyebrow">Account</p>
+      <h1>登录</h1>
+      <p>用户系统尚未接入，当前页面仅用于保留后续登录入口。</p>
+      <form class="demo-form" data-demo-form data-demo-message="用户系统正在开发中">
+        <label>
+          <span>邮箱</span>
+          <input type="email" name="email" placeholder="name@example.com" required>
+        </label>
+        <label>
+          <span>密码</span>
+          <input type="password" name="password" placeholder="请输入密码" required>
+        </label>
+        <button class="button primary" type="submit">登录</button>
+        <p class="demo-notice" role="status" aria-live="polite"></p>
+      </form>
+      <p class="auth-link">还没有账号？<a href="/register.html">前往注册</a></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year"></span> maopaoweic.top</p>
+    <p>用户系统正在开发中</p>
+  </footer>
+  <script src="/script.js"></script>
+</body>
+</html>
