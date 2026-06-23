@@ -1601,6 +1601,12 @@ h1 {
   background: rgba(183, 156, 255, 0.08);
 }
 
+.admin-status-shipped {
+  border-color: rgba(54, 226, 255, 0.26);
+  color: var(--cyan);
+  background: rgba(54, 226, 255, 0.08);
+}
+
 .admin-card-mask {
   display: inline-flex;
   width: max-content;

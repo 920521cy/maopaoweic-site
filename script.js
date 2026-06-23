@@ -120,7 +120,9 @@ const normalizeOrderFromApi = (order = {}) => ({
   status: order.status || "demo",
   paymentProvider: order.paymentProvider || "demo",
   createdAt: order.createdAt || "",
-  paidAt: order.paidAt || null
+  paidAt: order.paidAt || null,
+  cardStatus: order.cardStatus || null,
+  reservedCardKeyId: order.reservedCardKeyId || null
 });
 
 const createDemoOrder = async (productSlug) => {
@@ -250,6 +252,42 @@ const reserveDemoCardForOrder = async (orderId) => {
       ok: true,
       message: data.message || "演示卡密库存已为该订单预留，当前不会发放真实卡密",
       reservation: data.reservation
+    };
+  } catch {
+    return null;
+  }
+};
+
+const shipDemoOrder = async (orderId) => {
+  const normalizedOrderId = String(orderId || "").trim();
+
+  if (!normalizedOrderId || !window.fetch) {
+    return null;
+  }
+
+  try {
+    const response = await fetch("/api/admin/ship-order", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ orderId: normalizedOrderId })
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true || !data.shipment) {
+      return {
+        ok: false,
+        status: response.status,
+        message: data?.message || "Unable to complete demo shipment"
+      };
+    }
+
+    return {
+      ok: true,
+      message: data.message || "演示发货已完成，当前不会显示或发送真实卡密",
+      shipment: data.shipment
     };
   } catch {
     return null;
@@ -393,7 +431,11 @@ const renderAdminOrderRows = (items = demoOrders, sourceLabel = "本地演示订
 
   return items.map((order) => {
     const normalizedStatus = String(order.status || "").trim().toLowerCase();
-    const canReserveCard = sourceLabel === "D1 订单数据" && normalizedStatus === "demo";
+    const normalizedCardStatus = String(order.cardStatus || "").trim().toLowerCase();
+    const isD1Order = sourceLabel === "D1 订单数据";
+    const canReserveCard = isD1Order && normalizedStatus === "demo" && normalizedCardStatus !== "reserved";
+    const canShipOrder = isD1Order && normalizedStatus === "demo" && normalizedCardStatus === "reserved";
+    const isShipped = normalizedStatus === "shipped";
 
     return `
       <tr>
@@ -407,6 +449,8 @@ const renderAdminOrderRows = (items = demoOrders, sourceLabel = "本地演示订
           <div class="admin-actions">
             ${renderDemoButton("查看订单", "订单详情功能将在后台订单接口完善后开放")}
             ${canReserveCard ? `<button class="button secondary compact-button" type="button" data-reserve-card-order="${escapeHtml(order.id)}" data-order-id="${escapeHtml(order.id)}">预留卡密</button>` : ""}
+            ${canShipOrder ? `<button class="button secondary compact-button" type="button" data-ship-order="${escapeHtml(order.id)}" data-order-id="${escapeHtml(order.id)}">演示发货</button>` : ""}
+            ${isShipped ? `<span class="status-pill admin-status-shipped">已演示发货</span>` : ""}
             ${renderDemoButton("标记发货", "发货功能将在权限系统完成后开放")}
           </div>
         </td>
@@ -776,10 +820,12 @@ const renderProductDetail = async () => {
 };
 
 const renderOrderResult = (order) => {
-  const isDemoOrder = String(order.status || "").toLowerCase() === "demo";
-  const note = isDemoOrder
-    ? "当前为演示订单，尚未接入真实支付和自动发货。不会显示或发放真实卡密。"
-    : "当前为订单查询结果，不显示真实卡密或完整用户邮箱。";
+  const normalizedStatus = String(order.status || "").toLowerCase();
+  const noteByStatus = {
+    demo: "当前为演示订单，尚未接入真实支付和自动发货。不会显示或发放真实卡密。",
+    shipped: "演示发货已完成。当前仍不会显示或发送真实卡密。"
+  };
+  const note = noteByStatus[normalizedStatus] || "当前为订单查询结果，不显示真实卡密或完整用户邮箱。";
 
   return `
     <article class="order-result-card">
@@ -1234,6 +1280,47 @@ document.addEventListener("click", async (event) => {
   }
 
   showToast("预留卡密失败，请稍后再试");
+});
+
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-ship-order]");
+
+  if (!button) {
+    return;
+  }
+
+  const orderId = button.getAttribute("data-order-id") || button.getAttribute("data-ship-order") || "";
+  const originalText = button.textContent;
+
+  button.disabled = true;
+  button.textContent = "正在发货";
+
+  const result = await shipDemoOrder(orderId);
+
+  button.disabled = false;
+  button.textContent = originalText;
+
+  if (result?.ok) {
+    showToast("演示发货已完成");
+    await Promise.all([
+      renderAdminOrderManagement(),
+      renderAdminCardManagement(),
+      renderAdminDbStats()
+    ]);
+    return;
+  }
+
+  if (result?.status === 409) {
+    showToast("该订单尚未预留演示卡密");
+    return;
+  }
+
+  if (result?.status === 404) {
+    showToast("订单不存在");
+    return;
+  }
+
+  showToast("演示发货失败，请稍后再试");
 });
 
 document.addEventListener("click", (event) => {

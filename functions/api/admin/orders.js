@@ -13,7 +13,9 @@ const mapOrder = (row) => ({
   status: row.status,
   paymentProvider: row.payment_provider || "",
   createdAt: row.created_at,
-  paidAt: row.paid_at || null
+  paidAt: row.paid_at || null,
+  cardStatus: row.card_status || null,
+  reservedCardKeyId: row.reserved_card_key_id || null
 });
 
 export async function onRequest(context) {
@@ -42,9 +44,12 @@ export async function onRequest(context) {
         orders.status,
         orders.payment_provider,
         orders.created_at,
-        orders.paid_at
+        orders.paid_at,
+        card_keys.status AS card_status,
+        card_keys.id AS reserved_card_key_id
       FROM orders
       LEFT JOIN products ON products.id = orders.product_id
+      LEFT JOIN card_keys ON card_keys.order_id = orders.id
       ORDER BY orders.created_at DESC
       LIMIT 20
     `).all();

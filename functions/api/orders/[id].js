@@ -9,7 +9,7 @@ const json = (data, init = {}) => new Response(JSON.stringify(data), {
 const deliveryStatusByOrderStatus = {
   demo: "演示订单，未接入真实支付和发货",
   paid: "已支付，等待发货",
-  shipped: "已发货",
+  shipped: "演示发货已完成，当前不会显示或发送真实卡密",
   canceled: "已取消"
 };
 
