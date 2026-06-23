@@ -1212,6 +1212,51 @@ h1 {
   overflow: hidden;
 }
 
+.api-status-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 20px 22px;
+}
+
+.api-status-card h2 {
+  margin-bottom: 8px;
+  font-size: clamp(22px, 3vw, 30px);
+}
+
+.api-status-card p:not(.eyebrow) {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.api-status-pill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  max-width: 380px;
+  padding: 8px 11px;
+  border: 1px solid rgba(54, 226, 255, 0.22);
+  border-radius: 999px;
+  color: var(--cyan);
+  background: rgba(54, 226, 255, 0.08);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.api-status-pill[data-state="connected"] {
+  border-color: rgba(134, 255, 188, 0.28);
+  color: var(--green);
+  background: rgba(134, 255, 188, 0.08);
+}
+
+.api-status-pill[data-state="offline"] {
+  border-color: rgba(183, 156, 255, 0.28);
+  color: var(--muted-strong);
+  background: rgba(183, 156, 255, 0.08);
+}
+
 .admin-panel-header {
   display: flex;
   justify-content: space-between;
@@ -1712,6 +1757,11 @@ h1 {
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .api-status-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 560px) {
@@ -1746,6 +1796,16 @@ h1 {
 
   .admin-panel-header {
     padding: 18px;
+  }
+
+  .api-status-card {
+    padding: 18px;
+  }
+
+  .api-status-pill {
+    width: 100%;
+    max-width: none;
+    border-radius: 8px;
   }
 
   .admin-table {

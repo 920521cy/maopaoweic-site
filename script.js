@@ -137,6 +137,42 @@ const renderAdminMessageRows = () => {
   `).join("");
 };
 
+const updateApiHealthStatus = (message, state = "pending") => {
+  const status = document.querySelector("[data-api-health-status]");
+
+  if (!status) {
+    return;
+  }
+
+  status.textContent = message;
+  status.dataset.state = state;
+};
+
+const checkApiHealth = async () => {
+  const status = document.querySelector("[data-api-health-status]");
+
+  if (!status || !window.fetch) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/health", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true) {
+      throw new Error("API health check failed");
+    }
+
+    updateApiHealthStatus("API 已连接", "connected");
+  } catch {
+    updateApiHealthStatus("本地静态预览下 API 可能不可用，部署到 Cloudflare Pages 后测试", "offline");
+  }
+};
+
 const renderFeaturedProducts = () => {
   const container = document.querySelector("[data-featured-products]");
 
@@ -298,6 +334,15 @@ const renderAdminDemo = () => {
       `).join("")}
     </div>
 
+    <article class="admin-panel api-status-card">
+      <div>
+        <p class="eyebrow">API Status</p>
+        <h2>API 状态</h2>
+        <p>用于验证 Cloudflare Pages Functions 后端入口是否可用。</p>
+      </div>
+      <span class="api-status-pill" data-api-health-status data-state="pending">检测中</span>
+    </article>
+
     <article class="admin-panel">
       <div class="admin-panel-header">
         <div>
@@ -417,6 +462,49 @@ const renderAdminDemo = () => {
   `;
 };
 
+const submitMessageDemo = async (form) => {
+  const notice = form.querySelector(".demo-notice");
+  const formData = new FormData(form);
+  const payload = {
+    name: String(formData.get("nickname") || "").trim(),
+    email: String(formData.get("email") || "").trim(),
+    content: String(formData.get("message") || "").trim()
+  };
+
+  try {
+    const response = await fetch("/api/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true) {
+      throw new Error(data?.error || "Message API failed");
+    }
+
+    const message = "留言接口已接收，当前为演示提交";
+
+    if (notice) {
+      notice.textContent = message;
+    }
+
+    showToast(message);
+    form.reset();
+  } catch {
+    const message = "留言提交失败，请稍后再试";
+
+    if (notice) {
+      notice.textContent = message;
+    }
+
+    showToast(message);
+  }
+};
+
 const showToast = (message) => {
   if (!message) {
     return;
@@ -483,6 +571,7 @@ renderProductList();
 renderProductDetail();
 renderDashboardDemo();
 renderAdminDemo();
+checkApiHealth();
 
 document.addEventListener("click", (event) => {
   const button = event.target.closest("[data-demo-action]");
@@ -495,9 +584,14 @@ document.addEventListener("click", (event) => {
   showToast(message);
 });
 
-document.querySelectorAll("[data-demo-form]").forEach((form) => {
+document.querySelectorAll("[data-message-api-form], [data-demo-form]").forEach((form) => {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
+
+    if (form.matches("[data-message-api-form]")) {
+      submitMessageDemo(form);
+      return;
+    }
 
     const message = form.getAttribute("data-demo-message") || "功能正在开发中，当前为演示提交";
     const notice = form.querySelector(".demo-notice");
