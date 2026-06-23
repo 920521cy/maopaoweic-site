@@ -703,11 +703,12 @@ const renderOrderLookup = () => {
     const normalizedOrderId = String(orderId || "").trim();
 
     if (!normalizedOrderId) {
+      showToast("请输入订单号");
       setResultMessage("请输入订单号。", "offline");
       return;
     }
 
-    setResultMessage("正在查询订单。");
+    setResultMessage("正在查询订单...");
 
     const detail = await fetchOrderDetail(normalizedOrderId);
 
@@ -718,11 +719,11 @@ const renderOrderLookup = () => {
     }
 
     if (detail?.notFound) {
-      setResultMessage("未找到该订单，请检查订单号。", "offline");
+      setResultMessage("未找到该订单，请检查订单号", "offline");
       return;
     }
 
-    setResultMessage("订单查询暂时不可用，请稍后再试。", "offline");
+    setResultMessage("订单查询失败，请稍后再试", "offline");
   };
 
   form.addEventListener("submit", (event) => {
@@ -731,7 +732,7 @@ const renderOrderLookup = () => {
   });
 
   const params = new URLSearchParams(window.location.search);
-  const orderId = params.get("id");
+  const orderId = params.get("id") || params.get("orderId");
 
   if (orderId) {
     input.value = orderId;
