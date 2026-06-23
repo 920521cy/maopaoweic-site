@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex">
-  <meta name="description" content="冒泡维C AI Lab 管理后台入口演示页。">
+  <meta name="description" content="冒泡维C AI Lab 后台管理中心静态演示页。">
   <meta name="theme-color" content="#05070d">
-  <title>管理后台演示 · 冒泡维C AI Lab</title>
+  <title>后台管理中心 · 冒泡维C AI Lab</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon-32x32.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -37,38 +37,27 @@
   <main class="page-main">
     <section class="section page-hero">
       <p class="eyebrow">Admin Demo</p>
-      <h1>管理后台入口演示</h1>
-      <p>当前只做静态管理界面骨架，不包含真实权限、数据库或后台接口。</p>
+      <h1>后台管理中心</h1>
+      <p>商品、订单、卡密与留言管理演示</p>
+      <div class="admin-hero-notice">
+        当前为静态演示界面，尚未接入真实数据库
+      </div>
     </section>
 
-    <section class="section portal-grid">
+    <section class="section admin-console" data-admin-demo>
       <article class="info-card">
-        <span class="status-pill">静态界面</span>
-        <h2>商品管理</h2>
-        <p>预留商品上下架、价格、标签和详情内容维护入口。</p>
-      </article>
-      <article class="info-card">
-        <span class="status-pill">静态界面</span>
-        <h2>订单管理</h2>
-        <p>预留订单状态、支付记录和交付状态查看入口。</p>
-      </article>
-      <article class="info-card">
-        <span class="status-pill">静态界面</span>
-        <h2>卡密管理</h2>
-        <p>预留卡密库存、发货记录和失效状态管理入口。</p>
-      </article>
-      <article class="info-card">
-        <span class="status-pill">静态界面</span>
-        <h2>留言管理</h2>
-        <p>预留留言查看、回复状态和问题归类入口。</p>
+        <span class="status-pill">加载中</span>
+        <h2>后台演示数据加载中</h2>
+        <p>如果长时间未显示，请检查浏览器是否正常加载 site-data.js 和 script.js。</p>
       </article>
     </section>
   </main>
 
   <footer class="footer">
     <p>© <span id="year"></span> maopaoweic.top</p>
-    <p>后台入口当前仅用于演示</p>
+    <p>后台入口当前仅用于静态演示</p>
   </footer>
+  <script src="/site-data.js"></script>
   <script src="/script.js"></script>
 </body>
 </html>

@@ -8,6 +8,7 @@ const siteData = window.SITE_DATA || {};
 const products = Array.isArray(siteData.products) ? siteData.products : [];
 const demoOrders = Array.isArray(siteData.demoOrders) ? siteData.demoOrders : [];
 const demoCards = Array.isArray(siteData.demoCards) ? siteData.demoCards : [];
+const demoMessages = Array.isArray(siteData.demoMessages) ? siteData.demoMessages : [];
 
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;",
@@ -35,6 +36,106 @@ const renderProductCard = (product) => `
     <a class="button secondary compact-button" href="/product.html?slug=${encodeURIComponent(product.slug)}">查看详情</a>
   </article>
 `;
+
+const renderDemoButton = (label, message) => `
+  <button class="button secondary compact-button" type="button" data-demo-action="${escapeHtml(message)}">${escapeHtml(label)}</button>
+`;
+
+const renderAdminStatus = (value) => `<span class="status-pill">${escapeHtml(value || "演示数据")}</span>`;
+
+const renderAdminProductRows = () => {
+  if (!products.length) {
+    return `<tr><td colspan="6">暂无商品演示数据。</td></tr>`;
+  }
+
+  return products.map((product) => `
+    <tr>
+      <td>
+        <strong>${escapeHtml(product.title)}</strong>
+        <small>${escapeHtml(product.slug)}</small>
+      </td>
+      <td>${escapeHtml(product.price)}</td>
+      <td>${escapeHtml(product.category)}</td>
+      <td>${renderAdminStatus(product.status)}</td>
+      <td><div class="tag-list admin-tags">${renderTagList(product.tags)}</div></td>
+      <td>
+        <div class="admin-actions">
+          ${renderDemoButton("编辑", "商品编辑功能将在数据库接入后开放")}
+          ${renderDemoButton("下架", "商品上下架功能将在数据库接入后开放")}
+        </div>
+      </td>
+    </tr>
+  `).join("");
+};
+
+const renderAdminOrderRows = () => {
+  if (!demoOrders.length) {
+    return `<tr><td colspan="6">暂无订单演示数据。</td></tr>`;
+  }
+
+  return demoOrders.map((order) => `
+    <tr>
+      <td><strong>${escapeHtml(order.id)}</strong></td>
+      <td>${escapeHtml(order.productTitle)}</td>
+      <td>${escapeHtml(order.amount || "¥0")}</td>
+      <td>${renderAdminStatus(order.status)}</td>
+      <td>${escapeHtml(order.createdAt || "待接入订单系统")}</td>
+      <td>
+        <div class="admin-actions">
+          ${renderDemoButton("查看订单", "订单详情功能将在数据库接入后开放")}
+          ${renderDemoButton("标记发货", "发货状态将在订单系统接入后开放")}
+        </div>
+      </td>
+    </tr>
+  `).join("");
+};
+
+const renderAdminCardRows = () => {
+  if (!demoCards.length) {
+    return `<tr><td colspan="6">暂无卡密演示数据。</td></tr>`;
+  }
+
+  return demoCards.map((card) => {
+    const stock = Number(card.stock ?? card.count ?? 0);
+
+    return `
+      <tr>
+        <td>${escapeHtml(card.productTitle)}</td>
+        <td>${renderAdminStatus(card.status)}</td>
+        <td>${Number.isFinite(stock) ? stock : 0}</td>
+        <td><code>${escapeHtml(card.maskedCode || "****-****-DEMO")}</code></td>
+        <td>${escapeHtml(card.note || "仅显示安全占位符。")}</td>
+        <td>
+          <div class="admin-actions">
+            ${renderDemoButton("导入卡密", "卡密导入功能将在数据库接入后开放")}
+            ${renderDemoButton("查看库存", "库存查看功能将在数据库接入后开放")}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+};
+
+const renderAdminMessageRows = () => {
+  if (!demoMessages.length) {
+    return `<tr><td colspan="5">暂无留言演示数据。</td></tr>`;
+  }
+
+  return demoMessages.map((message) => `
+    <tr>
+      <td><strong>${escapeHtml(message.nickname)}</strong></td>
+      <td>${escapeHtml(message.email)}</td>
+      <td>${escapeHtml(message.summary)}</td>
+      <td>${renderAdminStatus(message.status)}</td>
+      <td>
+        <div class="admin-actions">
+          ${renderDemoButton("回复", "留言回复功能将在消息系统接入后开放")}
+          ${renderDemoButton("标记已处理", "留言处理状态将在数据库接入后开放")}
+        </div>
+      </td>
+    </tr>
+  `).join("");
+};
 
 const renderFeaturedProducts = () => {
   const container = document.querySelector("[data-featured-products]");
@@ -157,6 +258,165 @@ const renderDashboardDemo = () => {
   `;
 };
 
+const renderAdminDemo = () => {
+  const container = document.querySelector("[data-admin-demo]");
+
+  if (!container) {
+    return;
+  }
+
+  const cardStock = demoCards.reduce((total, card) => {
+    const value = Number(card.stock ?? card.count ?? 0);
+    return total + (Number.isFinite(value) ? value : 0);
+  }, 0);
+  const pendingOrders = demoOrders.filter((order) => /待|未/.test(order.status || "")).length;
+  const pendingMessages = demoMessages.filter((message) => /待|未/.test(message.status || "")).length;
+  const pendingTotal = pendingOrders + pendingMessages;
+  const stats = [
+    { label: "商品数量", value: products.length, note: "来自 site-data.js" },
+    { label: "演示订单数", value: demoOrders.length, note: "静态订单样本" },
+    { label: "卡密库存", value: cardStock, note: "安全占位统计" },
+    { label: "留言数量", value: demoMessages.length, note: "虚构演示留言" },
+    { label: "待处理事项", value: pendingTotal, note: "订单与留言合计" }
+  ];
+  const roadmap = [
+    "Cloudflare D1 数据库",
+    "Pages Functions API",
+    "管理员登录",
+    "商品真实增删改查",
+    "订单和卡密自动发货"
+  ];
+
+  container.innerHTML = `
+    <div class="admin-stats-grid">
+      ${stats.map((item) => `
+        <article class="admin-stat-card">
+          <span>${escapeHtml(item.label)}</span>
+          <strong>${escapeHtml(item.value)}</strong>
+          <p>${escapeHtml(item.note)}</p>
+        </article>
+      `).join("")}
+    </div>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <p class="eyebrow">Products</p>
+          <h2>商品管理</h2>
+        </div>
+        <span class="status-pill">静态数据</span>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>商品</th>
+              <th>价格</th>
+              <th>分类</th>
+              <th>状态</th>
+              <th>标签</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>${renderAdminProductRows()}</tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <p class="eyebrow">Orders</p>
+          <h2>订单管理</h2>
+        </div>
+        <span class="status-pill">演示订单</span>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>订单号</th>
+              <th>商品名</th>
+              <th>金额</th>
+              <th>状态</th>
+              <th>创建时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>${renderAdminOrderRows()}</tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <p class="eyebrow">Cards</p>
+          <h2>卡密管理</h2>
+        </div>
+        <span class="status-pill">不显示真实卡密</span>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>商品名</th>
+              <th>状态</th>
+              <th>库存数量</th>
+              <th>安全占位符</th>
+              <th>说明</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>${renderAdminCardRows()}</tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <p class="eyebrow">Messages</p>
+          <h2>留言管理</h2>
+        </div>
+        <span class="status-pill">虚构样本</span>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>昵称</th>
+              <th>邮箱</th>
+              <th>留言摘要</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>${renderAdminMessageRows()}</tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="admin-panel">
+      <div class="admin-panel-header">
+        <div>
+          <p class="eyebrow">Next</p>
+          <h2>后续接入说明</h2>
+        </div>
+        <span class="status-pill">规划中</span>
+      </div>
+      <div class="admin-roadmap-grid">
+        ${roadmap.map((item) => `
+          <div class="admin-roadmap-item">
+            <span></span>
+            <p>${escapeHtml(item)}</p>
+          </div>
+        `).join("")}
+      </div>
+    </article>
+  `;
+};
+
 const showToast = (message) => {
   if (!message) {
     return;
@@ -222,6 +482,7 @@ renderFeaturedProducts();
 renderProductList();
 renderProductDetail();
 renderDashboardDemo();
+renderAdminDemo();
 
 document.addEventListener("click", (event) => {
   const button = event.target.closest("[data-demo-action]");

@@ -89,7 +89,25 @@ window.SITE_DATA = {
     {
       id: "LAB-2026-001",
       productTitle: "n8n 内容流模板",
+      amount: "¥29",
       status: "待接入支付系统",
+      createdAt: "2026-06-23 09:30",
+      label: "演示数据"
+    },
+    {
+      id: "LAB-2026-002",
+      productTitle: "AI Lab 页面组件包",
+      amount: "¥39",
+      status: "待发货演示",
+      createdAt: "2026-06-23 10:12",
+      label: "演示数据"
+    },
+    {
+      id: "LAB-2026-003",
+      productTitle: "Codex 协作流程笔记",
+      amount: "¥19",
+      status: "已记录演示",
+      createdAt: "2026-06-23 11:05",
       label: "演示数据"
     }
   ],
@@ -97,8 +115,52 @@ window.SITE_DATA = {
     {
       id: "CARD-DEMO-001",
       productTitle: "n8n 内容流模板",
-      status: "演示数据 / 待接入发货系统",
-      note: "当前不包含真实卡密，后续接入订单系统后再显示交付内容。"
+      status: "演示库存",
+      maskedCode: "****-****-DEMO",
+      stock: 12,
+      count: 12,
+      note: "安全占位符，不包含真实卡密。"
+    },
+    {
+      id: "CARD-DEMO-002",
+      productTitle: "AI Lab 页面组件包",
+      status: "待导入演示",
+      maskedCode: "****-****-DEMO",
+      stock: 0,
+      count: 0,
+      note: "后续接入数据库后显示库存统计。"
+    },
+    {
+      id: "CARD-DEMO-003",
+      productTitle: "Codex 协作流程笔记",
+      status: "演示库存",
+      maskedCode: "****-****-DEMO",
+      stock: 6,
+      count: 6,
+      note: "仅用于静态页面展示。"
+    }
+  ],
+  demoMessages: [
+    {
+      id: "MSG-DEMO-001",
+      nickname: "示例访客A",
+      email: "visitor-a@example.com",
+      summary: "想了解 n8n 模板后续是否会加入更多自动化场景。",
+      status: "待处理"
+    },
+    {
+      id: "MSG-DEMO-002",
+      nickname: "Web Lab 用户",
+      email: "web-lab@example.com",
+      summary: "希望页面组件包后续加入更多静态区块示例。",
+      status: "已记录"
+    },
+    {
+      id: "MSG-DEMO-003",
+      nickname: "AI 工具测试者",
+      email: "ai-tester@example.com",
+      summary: "咨询未来是否会开放 Gemini API 测试记录模板。",
+      status: "待处理"
     }
   ]
 };
