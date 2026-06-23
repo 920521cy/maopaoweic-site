@@ -113,6 +113,68 @@ const loadProductDetailFromApi = async (slug) => {
   }
 };
 
+const normalizeOrderFromApi = (order = {}) => ({
+  id: order.id || "",
+  productTitle: order.productTitle || "未知商品",
+  amount: formatProductPrice(order.amount),
+  status: order.status || "demo",
+  paymentProvider: order.paymentProvider || "demo",
+  createdAt: order.createdAt || "",
+  paidAt: order.paidAt || null
+});
+
+const createDemoOrder = async (productSlug) => {
+  if (!productSlug || !window.fetch) {
+    return null;
+  }
+
+  try {
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ productSlug })
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true || !data.order) {
+      return null;
+    }
+
+    return {
+      message: data.message || "演示订单已创建，当前未接入真实支付",
+      order: normalizeOrderFromApi(data.order)
+    };
+  } catch {
+    return null;
+  }
+};
+
+const loadAdminOrdersFromApi = async () => {
+  if (!window.fetch) {
+    return null;
+  }
+
+  try {
+    const response = await fetch("/api/admin/orders", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true || !Array.isArray(data.orders)) {
+      return null;
+    }
+
+    return data.orders.map(normalizeOrderFromApi);
+  } catch {
+    return null;
+  }
+};
+
 const renderProductCard = (product) => `
   <article class="product-card${product.featured ? " featured" : ""}">
     <div class="card-topline">
@@ -125,6 +187,17 @@ const renderProductCard = (product) => `
       ${renderTagList(product.tags)}
     </div>
     <a class="button secondary compact-button" href="/product.html?slug=${encodeURIComponent(product.slug)}">查看详情</a>
+  </article>
+`;
+
+const renderDemoOrderCard = (order) => `
+  <article class="demo-order-card">
+    <span class="status-pill order-status-pill">${escapeHtml(order.status || "demo")}</span>
+    <h2>演示订单已创建</h2>
+    <p>订单号：<strong>${escapeHtml(order.id)}</strong></p>
+    <p>商品名：${escapeHtml(order.productTitle)}</p>
+    <p>金额：${escapeHtml(order.amount || "¥0")}</p>
+    <p>当前未接入真实支付，不会发放卡密。</p>
   </article>
 `;
 
@@ -186,26 +259,48 @@ const renderAdminProductManagement = async () => {
   }
 };
 
-const renderAdminOrderRows = () => {
-  if (!demoOrders.length) {
-    return `<tr><td colspan="6">暂无订单演示数据。</td></tr>`;
+const renderAdminOrderRows = (items = demoOrders, sourceLabel = "本地演示订单") => {
+  if (!items.length) {
+    return `<tr><td colspan="7">暂无订单数据。</td></tr>`;
   }
 
-  return demoOrders.map((order) => `
+  return items.map((order) => `
     <tr>
       <td><strong>${escapeHtml(order.id)}</strong></td>
       <td>${escapeHtml(order.productTitle)}</td>
       <td>${escapeHtml(order.amount || "¥0")}</td>
       <td>${renderAdminStatus(order.status)}</td>
       <td>${escapeHtml(order.createdAt || "待接入订单系统")}</td>
+      <td><span class="status-pill admin-source-pill">${escapeHtml(sourceLabel)}</span></td>
       <td>
         <div class="admin-actions">
-          ${renderDemoButton("查看订单", "订单详情功能将在数据库接入后开放")}
-          ${renderDemoButton("标记发货", "发货状态将在订单系统接入后开放")}
+          ${renderDemoButton("查看订单", "订单详情功能将在后台订单接口完善后开放")}
+          ${renderDemoButton("标记发货", "发货功能将在权限系统完成后开放")}
         </div>
       </td>
     </tr>
   `).join("");
+};
+
+const renderAdminOrderManagement = async () => {
+  const tableBody = document.querySelector("[data-admin-order-rows]");
+  const sourceStatus = document.querySelector("[data-admin-order-source]");
+
+  if (!tableBody) {
+    return;
+  }
+
+  const apiOrders = await loadAdminOrdersFromApi();
+  const usingApiOrders = Array.isArray(apiOrders);
+  const sourceOrders = usingApiOrders ? apiOrders : demoOrders;
+  const sourceLabel = usingApiOrders ? "D1 订单数据" : "本地演示订单";
+
+  tableBody.innerHTML = renderAdminOrderRows(sourceOrders, sourceLabel);
+
+  if (sourceStatus) {
+    sourceStatus.textContent = `当前显示：${sourceLabel}`;
+    sourceStatus.dataset.state = usingApiOrders ? "connected" : "offline";
+  }
 };
 
 const renderAdminCardRows = () => {
@@ -498,8 +593,9 @@ const renderProductDetail = async () => {
       <aside class="purchase-panel">
         <span>${escapeHtml(product.category)}</span>
         <strong>${escapeHtml(product.price)}</strong>
-        <p>当前仅展示前端购买入口，不接支付、不创建订单。</p>
-        <button class="button primary" type="button" data-demo-action="支付系统正在开发中">购买按钮</button>
+        <p>当前仅创建演示订单，不接真实支付、不发放卡密。</p>
+        <button class="button primary" type="button" data-demo-order="${escapeHtml(product.slug)}">创建演示订单</button>
+        <div class="demo-order-result" data-demo-order-result></div>
       </aside>
     </section>
 
@@ -657,7 +753,7 @@ const renderAdminDemo = () => {
           <p class="eyebrow">Orders</p>
           <h2>订单管理</h2>
         </div>
-        <span class="status-pill">演示订单</span>
+        <span class="api-status-pill" data-admin-order-source data-state="pending">读取中</span>
       </div>
       <div class="admin-table-wrap">
         <table class="admin-table">
@@ -668,10 +764,13 @@ const renderAdminDemo = () => {
               <th>金额</th>
               <th>状态</th>
               <th>创建时间</th>
+              <th>数据来源</th>
               <th>操作</th>
             </tr>
           </thead>
-          <tbody>${renderAdminOrderRows()}</tbody>
+          <tbody data-admin-order-rows>
+            <tr><td colspan="7">正在读取订单数据。</td></tr>
+          </tbody>
         </table>
       </div>
     </article>
@@ -788,9 +887,41 @@ renderProductDetail();
 renderDashboardDemo();
 renderAdminDemo();
 renderAdminProductManagement();
+renderAdminOrderManagement();
 renderAdminDbStats();
 checkApiHealth();
 checkDbHealth();
+
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-demo-order]");
+
+  if (!button) {
+    return;
+  }
+
+  const productSlug = button.getAttribute("data-demo-order") || "";
+  const resultContainer = button.closest(".purchase-panel")?.querySelector("[data-demo-order-result]");
+  const originalText = button.textContent;
+
+  button.disabled = true;
+  button.textContent = "正在创建演示订单";
+
+  const result = await createDemoOrder(productSlug);
+
+  button.disabled = false;
+  button.textContent = originalText;
+
+  if (!result?.order) {
+    showToast("订单系统暂时不可用，请稍后再试");
+    return;
+  }
+
+  if (resultContainer) {
+    resultContainer.innerHTML = renderDemoOrderCard(result.order);
+  }
+
+  showToast(result.message);
+});
 
 document.addEventListener("click", (event) => {
   const button = event.target.closest("[data-demo-action]");
