@@ -1251,6 +1251,12 @@ h1 {
   background: rgba(134, 255, 188, 0.08);
 }
 
+.api-status-pill[data-state="unbound"] {
+  border-color: rgba(255, 211, 125, 0.32);
+  color: #ffd37d;
+  background: rgba(255, 211, 125, 0.08);
+}
+
 .api-status-pill[data-state="offline"] {
   border-color: rgba(183, 156, 255, 0.28);
   color: var(--muted-strong);

@@ -8,7 +8,6 @@ const siteData = window.SITE_DATA || {};
 const products = Array.isArray(siteData.products) ? siteData.products : [];
 const demoOrders = Array.isArray(siteData.demoOrders) ? siteData.demoOrders : [];
 const demoCards = Array.isArray(siteData.demoCards) ? siteData.demoCards : [];
-const demoMessages = Array.isArray(siteData.demoMessages) ? siteData.demoMessages : [];
 
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;",
@@ -116,29 +115,8 @@ const renderAdminCardRows = () => {
   }).join("");
 };
 
-const renderAdminMessageRows = () => {
-  if (!demoMessages.length) {
-    return `<tr><td colspan="5">暂无留言演示数据。</td></tr>`;
-  }
-
-  return demoMessages.map((message) => `
-    <tr>
-      <td><strong>${escapeHtml(message.nickname)}</strong></td>
-      <td>${escapeHtml(message.email)}</td>
-      <td>${escapeHtml(message.summary)}</td>
-      <td>${renderAdminStatus(message.status)}</td>
-      <td>
-        <div class="admin-actions">
-          ${renderDemoButton("回复", "留言回复功能将在消息系统接入后开放")}
-          ${renderDemoButton("标记已处理", "留言处理状态将在数据库接入后开放")}
-        </div>
-      </td>
-    </tr>
-  `).join("");
-};
-
-const updateApiHealthStatus = (message, state = "pending") => {
-  const status = document.querySelector("[data-api-health-status]");
+const updateHealthStatus = (selector, message, state = "pending") => {
+  const status = document.querySelector(selector);
 
   if (!status) {
     return;
@@ -146,6 +124,14 @@ const updateApiHealthStatus = (message, state = "pending") => {
 
   status.textContent = message;
   status.dataset.state = state;
+};
+
+const updateApiHealthStatus = (message, state = "pending") => {
+  updateHealthStatus("[data-api-health-status]", message, state);
+};
+
+const updateDbHealthStatus = (message, state = "pending") => {
+  updateHealthStatus("[data-db-health-status]", message, state);
 };
 
 const checkApiHealth = async () => {
@@ -170,6 +156,36 @@ const checkApiHealth = async () => {
     updateApiHealthStatus("API 已连接", "connected");
   } catch {
     updateApiHealthStatus("本地静态预览下 API 可能不可用，部署到 Cloudflare Pages 后测试", "offline");
+  }
+};
+
+const checkDbHealth = async () => {
+  const status = document.querySelector("[data-db-health-status]");
+
+  if (!status || !window.fetch) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/db-health", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    const data = await response.json();
+
+    if (response.status === 503) {
+      updateDbHealthStatus("D1 尚未绑定", "unbound");
+      return;
+    }
+
+    if (!response.ok || data?.ok !== true) {
+      throw new Error("D1 health check failed");
+    }
+
+    updateDbHealthStatus("D1 已连接", "connected");
+  } catch {
+    updateDbHealthStatus("本地预览或未部署环境下 D1 可能不可用", "offline");
   }
 };
 
@@ -286,11 +302,6 @@ const renderDashboardDemo = () => {
       <p>状态：${escapeHtml(card?.status || "待接入发货系统")}</p>
       <p>${escapeHtml(card?.note || "当前不展示真实卡密。")}</p>
     </article>
-    <article class="info-card">
-      <span class="status-pill">演示数据</span>
-      <h2>我的留言</h2>
-      <p>留言记录未来会与账号绑定，当前仅展示静态占位内容。</p>
-    </article>
   `;
 };
 
@@ -306,14 +317,11 @@ const renderAdminDemo = () => {
     return total + (Number.isFinite(value) ? value : 0);
   }, 0);
   const pendingOrders = demoOrders.filter((order) => /待|未/.test(order.status || "")).length;
-  const pendingMessages = demoMessages.filter((message) => /待|未/.test(message.status || "")).length;
-  const pendingTotal = pendingOrders + pendingMessages;
   const stats = [
     { label: "商品数量", value: products.length, note: "来自 site-data.js" },
     { label: "演示订单数", value: demoOrders.length, note: "静态订单样本" },
     { label: "卡密库存", value: cardStock, note: "安全占位统计" },
-    { label: "留言数量", value: demoMessages.length, note: "虚构演示留言" },
-    { label: "待处理事项", value: pendingTotal, note: "订单与留言合计" }
+    { label: "待处理事项", value: pendingOrders, note: "演示订单待处理" }
   ];
   const roadmap = [
     "Cloudflare D1 数据库",
@@ -341,6 +349,15 @@ const renderAdminDemo = () => {
         <p>用于验证 Cloudflare Pages Functions 后端入口是否可用。</p>
       </div>
       <span class="api-status-pill" data-api-health-status data-state="pending">检测中</span>
+    </article>
+
+    <article class="admin-panel api-status-card">
+      <div>
+        <p class="eyebrow">D1 Status</p>
+        <h2>D1 状态</h2>
+        <p>用于验证 Cloudflare D1 binding 是否已经绑定并可查询。</p>
+      </div>
+      <span class="api-status-pill" data-db-health-status data-state="pending">检测中</span>
     </article>
 
     <article class="admin-panel">
@@ -421,30 +438,6 @@ const renderAdminDemo = () => {
     <article class="admin-panel">
       <div class="admin-panel-header">
         <div>
-          <p class="eyebrow">Messages</p>
-          <h2>留言管理</h2>
-        </div>
-        <span class="status-pill">虚构样本</span>
-      </div>
-      <div class="admin-table-wrap">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>昵称</th>
-              <th>邮箱</th>
-              <th>留言摘要</th>
-              <th>状态</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>${renderAdminMessageRows()}</tbody>
-        </table>
-      </div>
-    </article>
-
-    <article class="admin-panel">
-      <div class="admin-panel-header">
-        <div>
           <p class="eyebrow">Next</p>
           <h2>后续接入说明</h2>
         </div>
@@ -460,49 +453,6 @@ const renderAdminDemo = () => {
       </div>
     </article>
   `;
-};
-
-const submitMessageDemo = async (form) => {
-  const notice = form.querySelector(".demo-notice");
-  const formData = new FormData(form);
-  const payload = {
-    name: String(formData.get("nickname") || "").trim(),
-    email: String(formData.get("email") || "").trim(),
-    content: String(formData.get("message") || "").trim()
-  };
-
-  try {
-    const response = await fetch("/api/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-
-    if (!response.ok || data?.ok !== true) {
-      throw new Error(data?.error || "Message API failed");
-    }
-
-    const message = "留言接口已接收，当前为演示提交";
-
-    if (notice) {
-      notice.textContent = message;
-    }
-
-    showToast(message);
-    form.reset();
-  } catch {
-    const message = "留言提交失败，请稍后再试";
-
-    if (notice) {
-      notice.textContent = message;
-    }
-
-    showToast(message);
-  }
 };
 
 const showToast = (message) => {
@@ -572,6 +522,7 @@ renderProductDetail();
 renderDashboardDemo();
 renderAdminDemo();
 checkApiHealth();
+checkDbHealth();
 
 document.addEventListener("click", (event) => {
   const button = event.target.closest("[data-demo-action]");
@@ -584,14 +535,9 @@ document.addEventListener("click", (event) => {
   showToast(message);
 });
 
-document.querySelectorAll("[data-message-api-form], [data-demo-form]").forEach((form) => {
+document.querySelectorAll("[data-demo-form]").forEach((form) => {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-
-    if (form.matches("[data-message-api-form]")) {
-      submitMessageDemo(form);
-      return;
-    }
 
     const message = form.getAttribute("data-demo-message") || "功能正在开发中，当前为演示提交";
     const notice = form.querySelector(".demo-notice");

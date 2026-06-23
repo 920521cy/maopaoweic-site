@@ -139,28 +139,5 @@ window.SITE_DATA = {
       count: 6,
       note: "仅用于静态页面展示。"
     }
-  ],
-  demoMessages: [
-    {
-      id: "MSG-DEMO-001",
-      nickname: "示例访客A",
-      email: "visitor-a@example.com",
-      summary: "想了解 n8n 模板后续是否会加入更多自动化场景。",
-      status: "待处理"
-    },
-    {
-      id: "MSG-DEMO-002",
-      nickname: "Web Lab 用户",
-      email: "web-lab@example.com",
-      summary: "希望页面组件包后续加入更多静态区块示例。",
-      status: "已记录"
-    },
-    {
-      id: "MSG-DEMO-003",
-      nickname: "AI 工具测试者",
-      email: "ai-tester@example.com",
-      summary: "咨询未来是否会开放 Gemini API 测试记录模板。",
-      status: "待处理"
-    }
   ]
 };
