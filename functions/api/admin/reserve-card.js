@@ -79,10 +79,10 @@ export async function onRequest(context) {
       }, { status: 404 });
     }
 
-    if (order.status !== "demo") {
+    if (!["demo", "paid"].includes(order.status)) {
       return json({
         ok: false,
-        message: "Only demo orders can reserve demo card keys"
+        message: "Only demo or paid orders can reserve demo card keys"
       }, { status: 400 });
     }
 

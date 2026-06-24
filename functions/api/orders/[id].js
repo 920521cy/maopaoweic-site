@@ -7,9 +7,10 @@ const json = (data, init = {}) => new Response(JSON.stringify(data), {
 });
 
 const deliveryStatusByOrderStatus = {
-  demo: "演示订单，未接入真实支付和发货",
-  paid: "已支付，等待发货",
-  shipped: "演示发货已完成，当前不会显示或发送真实卡密",
+  pending: "订单已创建，等待人工付款确认。",
+  paid: "付款已确认，等待后台处理发货。",
+  demo: "演示订单，未接入真实支付和发货。",
+  shipped: "演示发货已完成，当前不会显示或发送真实卡密。",
   canceled: "已取消"
 };
 
@@ -19,6 +20,7 @@ const mapOrder = (row) => ({
   amount: Number(row.amount ?? 0),
   status: row.status,
   paymentProvider: row.payment_provider || "",
+  paymentMethod: row.payment_id || "",
   createdAt: row.created_at,
   paidAt: row.paid_at || null,
   deliveryStatus: deliveryStatusByOrderStatus[row.status] || "订单状态待确认"
@@ -58,6 +60,7 @@ export async function onRequest(context) {
         orders.amount,
         orders.status,
         orders.payment_provider,
+        orders.payment_id,
         orders.created_at,
         orders.paid_at
       FROM orders

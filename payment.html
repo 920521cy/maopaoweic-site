@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="冒泡维C AI Lab 数字商品详情页。当前为人工收款流程，不接自动支付和自动发卡。">
+  <meta name="description" content="冒泡维C AI Lab 人工付款说明页。">
   <meta name="theme-color" content="#05070d">
-  <title>商品详情 · 冒泡维C AI Lab</title>
+  <title>人工付款 · 冒泡维C AI Lab</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon-32x32.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -33,11 +33,25 @@
     </nav>
   </header>
 
-  <main class="page-main" data-product-detail></main>
+  <main class="page-main">
+    <section class="section page-hero">
+      <p class="eyebrow">Manual Payment</p>
+      <h1>人工付款</h1>
+      <p>当前为人工收款流程，尚未接入自动支付接口，也不会自动发卡。付款时请备注订单号，后台人工确认后再处理演示发货。</p>
+    </section>
+
+    <div data-payment-detail>
+      <section class="section">
+        <article class="payment-status-card">
+          <p>正在读取订单信息...</p>
+        </article>
+      </section>
+    </div>
+  </main>
 
   <footer class="footer">
     <p>© <span id="year"></span> maopaoweic.top</p>
-    <p>个人实验站：当前为人工收款流程，不接自动支付接口，不自动发放真实卡密。</p>
+    <p>人工付款流程不接真实支付接口，不会在页面显示真实卡密。</p>
   </footer>
   <script src="/site-data.js"></script>
   <script src="/script.js"></script>

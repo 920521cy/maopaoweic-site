@@ -188,6 +188,7 @@ const normalizeOrderFromApi = (order = {}) => ({
   amount: formatProductPrice(order.amount),
   status: order.status || "demo",
   paymentProvider: order.paymentProvider || "demo",
+  paymentMethod: order.paymentMethod || "",
   createdAt: order.createdAt || "",
   paidAt: order.paidAt || null,
   cardStatus: order.cardStatus || null,
@@ -217,6 +218,36 @@ const createDemoOrder = async (productSlug) => {
     return {
       message: data.message || "演示订单已创建，当前未接入真实支付",
       order: normalizeOrderFromApi(data.order)
+    };
+  } catch {
+    return null;
+  }
+};
+
+const createManualCheckoutOrder = async (productSlug, paymentMethod = "manual") => {
+  if (!productSlug || !window.fetch) {
+    return null;
+  }
+
+  try {
+    const response = await fetch("/api/manual-checkout", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ productSlug, paymentMethod })
+    });
+    const data = await response.json();
+
+    if (!response.ok || data?.ok !== true || !data.order) {
+      return null;
+    }
+
+    return {
+      message: data.message || "人工收款订单已创建，请按页面提示完成付款并备注订单号",
+      order: normalizeOrderFromApi(data.order),
+      paymentUrl: data.paymentUrl || `/payment.html?id=${encodeURIComponent(data.order.id)}`
     };
   } catch {
     return null;
@@ -440,6 +471,36 @@ const shipDemoOrder = async (orderId) => {
     ok: false,
     status: result?.status,
     message: result?.data?.message || "Unable to complete demo shipment"
+  };
+};
+
+const markOrderAsPaid = async (orderId) => {
+  const normalizedOrderId = String(orderId || "").trim();
+
+  if (!normalizedOrderId || !window.fetch) {
+    return null;
+  }
+
+  const result = await fetchAdminJson("/api/admin/mark-paid", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ orderId: normalizedOrderId })
+  });
+
+  if (result?.ok && result.data?.order) {
+    return {
+      ok: true,
+      message: result.data.message || "订单已标记为人工已支付",
+      order: result.data.order
+    };
+  }
+
+  return {
+    ok: false,
+    status: result?.status,
+    message: result?.data?.message || "Unable to mark order as paid"
   };
 };
 
@@ -779,12 +840,24 @@ const renderAdminOrderRows = (items = demoOrders, sourceLabel = "本地演示订
     return `<tr><td colspan="7">暂无订单数据。</td></tr>`;
   }
 
+  const statusNotes = {
+    pending: "等待人工付款确认",
+    paid: "已支付，等待处理",
+    shipped: "已发货",
+    demo: "演示订单"
+  };
+
   return items.map((order) => {
     const normalizedStatus = String(order.status || "").trim().toLowerCase();
     const normalizedCardStatus = String(order.cardStatus || "").trim().toLowerCase();
     const isD1Order = sourceLabel === "D1 订单数据";
-    const canReserveCard = isD1Order && normalizedStatus === "demo" && normalizedCardStatus !== "reserved";
-    const canShipOrder = isD1Order && normalizedStatus === "demo" && normalizedCardStatus === "reserved";
+    const canMarkPaid = isD1Order && normalizedStatus === "pending";
+    const canReserveCard = isD1Order
+      && ["demo", "paid"].includes(normalizedStatus)
+      && !["reserved", "sold"].includes(normalizedCardStatus);
+    const canShipOrder = isD1Order
+      && ["demo", "paid"].includes(normalizedStatus)
+      && normalizedCardStatus === "reserved";
     const isShipped = normalizedStatus === "shipped";
 
     return `
@@ -792,16 +865,19 @@ const renderAdminOrderRows = (items = demoOrders, sourceLabel = "本地演示订
         <td><strong>${escapeHtml(order.id)}</strong></td>
         <td>${escapeHtml(order.productTitle)}</td>
         <td>${escapeHtml(order.amount || "¥0")}</td>
-        <td>${renderAdminStatus(order.status)}</td>
+        <td>
+          ${renderAdminStatus(order.status)}
+          <small>${escapeHtml(statusNotes[normalizedStatus] || "订单状态待确认")}</small>
+        </td>
         <td>${escapeHtml(order.createdAt || "待接入订单系统")}</td>
         <td><span class="status-pill admin-source-pill">${escapeHtml(sourceLabel)}</span></td>
         <td>
           <div class="admin-actions">
-            ${renderDemoButton("查看订单", "订单详情功能将在后台订单接口完善后开放")}
+            <a class="button secondary compact-button" href="/order.html?id=${encodeURIComponent(order.id)}">查看订单</a>
+            ${canMarkPaid ? `<button class="button secondary compact-button" type="button" data-mark-paid-order="${escapeHtml(order.id)}" data-order-id="${escapeHtml(order.id)}">标记已支付</button>` : ""}
             ${canReserveCard ? `<button class="button secondary compact-button" type="button" data-reserve-card-order="${escapeHtml(order.id)}" data-order-id="${escapeHtml(order.id)}">预留卡密</button>` : ""}
             ${canShipOrder ? `<button class="button secondary compact-button" type="button" data-ship-order="${escapeHtml(order.id)}" data-order-id="${escapeHtml(order.id)}">演示发货</button>` : ""}
             ${isShipped ? `<span class="status-pill admin-status-shipped">已演示发货</span>` : ""}
-            ${renderDemoButton("标记发货", "发货功能将在权限系统完成后开放")}
           </div>
         </td>
       </tr>
@@ -1178,9 +1254,9 @@ const renderProductDetail = async () => {
       <aside class="purchase-panel">
         <span>${escapeHtml(product.category)}</span>
         <strong>${escapeHtml(product.price)}</strong>
-        <p>当前仅创建演示订单，不接真实支付、不发放卡密。</p>
-        <button class="button primary" type="button" data-demo-order="${escapeHtml(product.slug)}">创建演示订单</button>
-        <div class="demo-order-result" data-demo-order-result></div>
+        <p>当前为人工收款流程，尚未接入自动支付和自动发卡。创建订单后请按付款页提示备注订单号，后台人工确认前不会发货。</p>
+        <button class="button primary" type="button" data-manual-checkout="${escapeHtml(product.slug)}">创建人工付款订单</button>
+        <div class="demo-order-result" data-manual-checkout-result></div>
       </aside>
     </section>
 
@@ -1199,7 +1275,7 @@ const renderProductDetail = async () => {
       </article>
       <article class="info-card">
         <h2>购买须知</h2>
-        <p>当前页面为静态演示，不会产生真实订单。未来接入支付和卡密系统后，会在此补充交付与售后规则。</p>
+        <p>当前为人工收款订单流程，不接 Stripe、支付宝官方接口或微信支付官方接口；不会自动发卡，也不会在页面显示真实卡密。</p>
       </article>
     </section>
   `;
@@ -1208,6 +1284,8 @@ const renderProductDetail = async () => {
 const renderOrderResult = (order) => {
   const normalizedStatus = String(order.status || "").toLowerCase();
   const noteByStatus = {
+    pending: "订单已创建，等待人工付款确认。付款时请备注订单号，未确认前不会发货。",
+    paid: "付款已确认，等待后台处理发货。当前不会显示或发送真实卡密。",
     demo: "当前为演示订单，尚未接入真实支付和自动发货。不会显示或发放真实卡密。",
     shipped: "演示发货已完成。当前仍不会显示或发送真实卡密。"
   };
@@ -1233,6 +1311,87 @@ const renderOrderResult = (order) => {
       <p class="order-result-note">${escapeHtml(note)}</p>
     </article>
   `;
+};
+
+const paymentMethodLabels = {
+  alipay: "支付宝人工转账",
+  wechat: "微信人工转账",
+  manual: "人工确认"
+};
+
+const renderManualPaymentDetail = () => {
+  const container = document.querySelector("[data-payment-detail]");
+
+  if (!container) {
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const orderId = String(params.get("id") || params.get("orderId") || "").trim();
+
+  const setState = (message, state = "pending") => {
+    container.dataset.state = state;
+    container.innerHTML = `<article class="payment-status-card"><p>${escapeHtml(message)}</p></article>`;
+  };
+
+  if (!orderId) {
+    setState("缺少订单号，请从商品详情页重新创建人工付款订单。", "offline");
+    return;
+  }
+
+  setState("正在读取订单信息...");
+
+  fetchOrderDetail(orderId).then((detail) => {
+    if (!detail?.order) {
+      setState(detail?.notFound ? "未找到该订单，请检查订单号。" : "订单系统暂时不可用，请稍后再试。", "offline");
+      return;
+    }
+
+    const order = detail.order;
+    const normalizedStatus = String(order.status || "").toLowerCase();
+    const method = String(order.paymentMethod || "manual").toLowerCase();
+    const methodLabel = paymentMethodLabels[method] || paymentMethodLabels.manual;
+
+    container.dataset.state = "connected";
+    container.innerHTML = `
+      <section class="section payment-detail-grid">
+        <article class="payment-status-card">
+          <p class="eyebrow">Manual Payment</p>
+          <h1>人工付款</h1>
+          <p>当前为人工收款流程，尚未接入自动支付接口。付款时请备注订单号，付款后等待后台人工确认；未确认前不会发货，也不会在页面显示真实卡密。</p>
+          <div class="order-result-grid payment-order-summary">
+            <p><span>订单号</span><strong>${escapeHtml(order.id)}</strong></p>
+            <p><span>商品名称</span><strong>${escapeHtml(order.productTitle)}</strong></p>
+            <p><span>金额</span><strong>${escapeHtml(order.amount || "¥0")}</strong></p>
+            <p><span>当前状态</span><strong>${escapeHtml(order.status || "pending")}</strong></p>
+            <p><span>付款方式</span><strong>${escapeHtml(methodLabel)}</strong></p>
+            <p><span>发货状态</span><strong>${escapeHtml(order.deliveryStatus || "等待人工确认")}</strong></p>
+          </div>
+          <div class="payment-actions">
+            <button class="button secondary compact-button" type="button" data-copy-order-id="${escapeHtml(order.id)}">复制订单号</button>
+            <a class="button primary compact-button" href="/order.html?id=${encodeURIComponent(order.id)}">查看订单状态</a>
+          </div>
+        </article>
+
+        <article class="payment-instructions-card">
+          <p class="eyebrow">Payment Note</p>
+          <h2>付款备注要求</h2>
+          <p>请在转账备注中填写订单号：<strong>${escapeHtml(order.id)}</strong></p>
+          <p>${normalizedStatus === "pending" ? "该订单正在等待人工付款确认。" : escapeHtml(order.deliveryStatus || "订单状态待确认。")}</p>
+          <div class="payment-qr-grid">
+            <div class="payment-qr-placeholder">
+              <span>WeChat</span>
+              <p>微信收款码占位，正式运营前手动替换</p>
+            </div>
+            <div class="payment-qr-placeholder">
+              <span>Alipay</span>
+              <p>支付宝收款码占位，正式运营前手动替换</p>
+            </div>
+          </div>
+        </article>
+      </section>
+    `;
+  });
 };
 
 const renderOrderLookup = () => {
@@ -1620,6 +1779,7 @@ renderFeaturedProducts();
 renderProductList();
 renderProductDetail();
 renderOrderLookup();
+renderManualPaymentDetail();
 renderDashboardDemo();
 initAdminAccessControls();
 renderAdminDemo();
@@ -1650,20 +1810,20 @@ document.addEventListener("click", async (event) => {
 });
 
 document.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-demo-order]");
+  const button = event.target.closest("[data-manual-checkout]");
 
   if (!button) {
     return;
   }
 
-  const productSlug = button.getAttribute("data-demo-order") || "";
-  const resultContainer = button.closest(".purchase-panel")?.querySelector("[data-demo-order-result]");
+  const productSlug = button.getAttribute("data-manual-checkout") || "";
+  const resultContainer = button.closest(".purchase-panel")?.querySelector("[data-manual-checkout-result]");
   const originalText = button.textContent;
 
   button.disabled = true;
-  button.textContent = "正在创建演示订单";
+  button.textContent = "正在创建人工付款订单";
 
-  const result = await createDemoOrder(productSlug);
+  const result = await createManualCheckoutOrder(productSlug);
 
   button.disabled = false;
   button.textContent = originalText;
@@ -1674,10 +1834,14 @@ document.addEventListener("click", async (event) => {
   }
 
   if (resultContainer) {
-    resultContainer.innerHTML = renderDemoOrderCard(result.order);
+    resultContainer.innerHTML = `<p>${escapeHtml(result.message)}</p>`;
   }
 
   showToast(result.message);
+
+  if (result.paymentUrl) {
+    window.location.href = result.paymentUrl;
+  }
 });
 
 document.addEventListener("submit", async (event) => {
@@ -1766,6 +1930,59 @@ document.addEventListener("click", (event) => {
   }
 
   resetAdminProductDraftForm();
+});
+
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-mark-paid-order]");
+
+  if (!button) {
+    return;
+  }
+
+  const orderId = button.getAttribute("data-order-id") || button.getAttribute("data-mark-paid-order") || "";
+  const originalText = button.textContent;
+
+  button.disabled = true;
+  button.textContent = "正在标记";
+
+  const result = await markOrderAsPaid(orderId);
+
+  button.disabled = false;
+  button.textContent = originalText;
+
+  if (result?.ok) {
+    showToast("订单已标记为人工已支付");
+    await Promise.all([
+      renderAdminOrderManagement(),
+      renderAdminDbStats()
+    ]);
+    return;
+  }
+
+  if (result?.status === 0) {
+    showToast("请先保存管理员访问口令");
+    await Promise.all([
+      renderAdminOrderManagement(),
+      renderAdminDbStats()
+    ]);
+    return;
+  }
+
+  if (result?.status === 401 || result?.status === 503) {
+    return;
+  }
+
+  if (result?.status === 404) {
+    showToast("订单不存在");
+    return;
+  }
+
+  if (result?.status === 400) {
+    showToast("只有 pending 订单可以标记为已支付");
+    return;
+  }
+
+  showToast("标记已支付失败，请稍后再试");
 });
 
 document.addEventListener("click", async (event) => {
