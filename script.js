@@ -80,51 +80,125 @@ const initCosmicBackground = () => {
   }
 
   const reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  const TAU = Math.PI * 2;
+  const randomBetween = (min, max) => min + Math.random() * (max - min);
+
   let reducedMotion = Boolean(reducedMotionQuery?.matches);
   let width = 0;
   let height = 0;
   let dpr = 1;
   let stars = [];
-  let particles = [];
+  let dust = [];
+  let nebulaClouds = [];
+  let ringWisps = [];
+  let meteors = [];
   let rafId = 0;
   let running = true;
   let pointerX = 0;
   let pointerY = 0;
   let frameSkip = 0;
+  let lastTime = 0;
+  let nextMeteorAt = 0;
 
-  const randomBetween = (min, max) => min + Math.random() * (max - min);
   const isMobile = () => window.innerWidth <= 700;
+
+  const getGalaxy = () => {
+    const mobile = isMobile();
+    const radius = Math.max(width, height) * (mobile ? 0.72 : 0.66);
+
+    return {
+      x: width * (mobile ? 0.58 : 0.66),
+      y: height * (mobile ? 0.18 : 0.10),
+      radius,
+      scaleY: mobile ? 0.32 : 0.36,
+      tilt: mobile ? -0.14 : -0.22
+    };
+  };
 
   const buildScene = () => {
     const mobile = isMobile();
     const area = Math.max(1, width * height);
-    const starCount = reducedMotion ? 70 : Math.min(mobile ? 90 : 150, Math.floor(area / (mobile ? 7800 : 9200)));
-    const particleCount = reducedMotion ? 4 : mobile ? 8 : 16;
+    const farCount = reducedMotion ? 80 : Math.min(mobile ? 120 : 260, Math.floor(area / (mobile ? 3600 : 3200)));
+    const midCount = reducedMotion ? 36 : Math.min(mobile ? 48 : 110, Math.floor(area / (mobile ? 9200 : 7600)));
+    const nearCount = reducedMotion ? 10 : mobile ? 14 : 28;
+    const dustCount = reducedMotion ? 70 : mobile ? 130 : 260;
 
-    stars = Array.from({ length: starCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: randomBetween(0.45, mobile ? 1.2 : 1.55),
-      speed: randomBetween(0.012, mobile ? 0.04 : 0.065),
-      twinkle: randomBetween(0.5, 1.9),
-      phase: Math.random() * Math.PI * 2
+    stars = [
+      ...Array.from({ length: farCount }, () => ({
+        layer: "far",
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: randomBetween(0.28, mobile ? 0.82 : 0.9),
+        drift: randomBetween(0.002, 0.009),
+        twinkle: randomBetween(0.18, 0.55),
+        phase: Math.random() * TAU,
+        alpha: randomBetween(0.18, 0.48),
+        hue: "219, 242, 255"
+      })),
+      ...Array.from({ length: midCount }, () => ({
+        layer: "mid",
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: randomBetween(0.55, mobile ? 1.1 : 1.35),
+        drift: randomBetween(0.006, 0.018),
+        twinkle: randomBetween(0.55, 1.18),
+        phase: Math.random() * TAU,
+        alpha: randomBetween(0.28, 0.68),
+        hue: Math.random() > 0.25 ? "224, 242, 254" : "191, 219, 254"
+      })),
+      ...Array.from({ length: nearCount }, () => ({
+        layer: "near",
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: randomBetween(1.0, mobile ? 1.55 : 2.1),
+        drift: randomBetween(0.01, 0.026),
+        twinkle: randomBetween(0.5, 0.95),
+        phase: Math.random() * TAU,
+        alpha: randomBetween(0.5, 0.86),
+        hue: Math.random() > 0.35 ? "224, 242, 254" : "253, 230, 138"
+      }))
+    ];
+
+    dust = Array.from({ length: dustCount }, () => ({
+      angle: randomBetween(-0.35, TAU + 0.65),
+      orbit: randomBetween(-0.11, 0.12),
+      spread: randomBetween(-18, 18),
+      r: randomBetween(0.45, mobile ? 1.35 : 1.75),
+      speed: randomBetween(0.000012, 0.00004),
+      alpha: randomBetween(0.2, 0.72),
+      phase: Math.random() * TAU,
+      color: Math.random() > 0.45 ? "250, 204, 21" : Math.random() > 0.5 ? "251, 191, 36" : "253, 230, 138"
     }));
 
-    particles = Array.from({ length: particleCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: randomBetween(-0.08, 0.08),
-      vy: randomBetween(-0.05, 0.05),
-      length: randomBetween(46, mobile ? 92 : 150),
-      hue: Math.random() > 0.5 ? "#22d3ee" : "#5eead4",
-      phase: Math.random() * Math.PI * 2
+    nebulaClouds = Array.from({ length: mobile ? 4 : 7 }, (_, index) => ({
+      x: randomBetween(width * 0.12, width * 0.88),
+      y: randomBetween(height * 0.08, height * 0.72),
+      radius: randomBetween(Math.max(width, height) * 0.14, Math.max(width, height) * 0.34),
+      color: index % 2 === 0 ? "56, 189, 248" : index % 3 === 0 ? "224, 242, 254" : "124, 58, 237",
+      alpha: randomBetween(0.035, mobile ? 0.08 : 0.115),
+      phase: Math.random() * TAU,
+      drift: randomBetween(10, mobile ? 24 : 46)
     }));
+
+    ringWisps = Array.from({ length: mobile ? 7 : 13 }, (_, index) => ({
+      radiusScale: randomBetween(0.72, 1.22),
+      yScale: randomBetween(0.92, 1.08),
+      start: Math.PI * randomBetween(0.04, 0.45),
+      length: Math.PI * randomBetween(0.18, 0.72),
+      alpha: randomBetween(0.035, 0.09),
+      lineWidth: randomBetween(0.7, 1.8),
+      speed: randomBetween(0.00003, 0.00008),
+      gold: index % 3 === 0
+    }));
+
+    meteors = [];
+    nextMeteorAt = reducedMotion ? Number.POSITIVE_INFINITY : performance.now() + randomBetween(4200, mobile ? 11000 : 8500);
   };
 
   const resize = () => {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    width = window.innerWidth;
-    height = window.innerHeight;
+    width = Math.max(1, window.innerWidth);
+    height = Math.max(1, window.innerHeight);
     canvas.width = Math.floor(width * dpr);
     canvas.height = Math.floor(height * dpr);
     canvas.style.width = `${width}px`;
@@ -135,123 +209,259 @@ const initCosmicBackground = () => {
     buildScene();
   };
 
-  const drawNebula = (time) => {
-    const gradient = context.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, "#020617");
-    gradient.addColorStop(0.45, "#061225");
-    gradient.addColorStop(1, "#120b2f");
-    context.fillStyle = gradient;
+  const drawSpaceBase = (time) => {
+    const base = context.createLinearGradient(0, 0, width, height);
+    base.addColorStop(0, "#020617");
+    base.addColorStop(0.48, "#061225");
+    base.addColorStop(1, "#120b2f");
+    context.fillStyle = base;
     context.fillRect(0, 0, width, height);
 
-    const drift = reducedMotion ? 0 : Math.sin(time * 0.00008) * 34;
-    const nebulaA = context.createRadialGradient(width * 0.18 + drift, height * 0.12, 0, width * 0.18 + drift, height * 0.12, Math.max(width, height) * 0.58);
-    nebulaA.addColorStop(0, "rgba(34, 211, 238, 0.22)");
-    nebulaA.addColorStop(0.36, "rgba(124, 58, 237, 0.10)");
-    nebulaA.addColorStop(1, "rgba(2, 6, 23, 0)");
-    context.fillStyle = nebulaA;
+    const slow = reducedMotion ? 0 : Math.sin(time * 0.00005) * width * 0.03;
+    const halo = context.createRadialGradient(width * 0.58 + slow, height * 0.06, 0, width * 0.58 + slow, height * 0.06, Math.max(width, height) * 0.78);
+    halo.addColorStop(0, "rgba(191, 219, 254, 0.18)");
+    halo.addColorStop(0.24, "rgba(56, 189, 248, 0.10)");
+    halo.addColorStop(0.55, "rgba(124, 58, 237, 0.075)");
+    halo.addColorStop(1, "rgba(2, 6, 23, 0)");
+    context.fillStyle = halo;
     context.fillRect(0, 0, width, height);
 
-    const nebulaB = context.createRadialGradient(width * 0.82 - drift, height * 0.18, 0, width * 0.82 - drift, height * 0.18, Math.max(width, height) * 0.48);
-    nebulaB.addColorStop(0, "rgba(94, 234, 212, 0.14)");
-    nebulaB.addColorStop(0.42, "rgba(124, 58, 237, 0.10)");
-    nebulaB.addColorStop(1, "rgba(2, 6, 23, 0)");
-    context.fillStyle = nebulaB;
+    const lower = context.createRadialGradient(width * 0.16, height * 0.86, 0, width * 0.16, height * 0.86, Math.max(width, height) * 0.58);
+    lower.addColorStop(0, "rgba(34, 211, 238, 0.075)");
+    lower.addColorStop(0.42, "rgba(14, 116, 144, 0.045)");
+    lower.addColorStop(1, "rgba(2, 6, 23, 0)");
+    context.fillStyle = lower;
     context.fillRect(0, 0, width, height);
   };
 
+  const drawNebulaBands = (time) => {
+    const mobile = isMobile();
+    const shift = reducedMotion ? 0 : Math.sin(time * 0.00007) * (mobile ? 12 : 32);
+
+    nebulaClouds.forEach((cloud) => {
+      const x = cloud.x + Math.sin(time * 0.00006 + cloud.phase) * cloud.drift;
+      const y = cloud.y + Math.cos(time * 0.00005 + cloud.phase) * cloud.drift * 0.45;
+      const gradient = context.createRadialGradient(x, y, 0, x, y, cloud.radius);
+      gradient.addColorStop(0, `rgba(${cloud.color}, ${cloud.alpha})`);
+      gradient.addColorStop(0.38, `rgba(${cloud.color}, ${cloud.alpha * 0.44})`);
+      gradient.addColorStop(1, `rgba(${cloud.color}, 0)`);
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, width, height);
+    });
+
+    context.save();
+    context.globalCompositeOperation = "screen";
+    context.lineCap = "round";
+    const bandGradient = context.createLinearGradient(width * 0.08, height * 0.58, width * 0.92, height * 0.18);
+    bandGradient.addColorStop(0, "rgba(56, 189, 248, 0)");
+    bandGradient.addColorStop(0.22, "rgba(56, 189, 248, 0.05)");
+    bandGradient.addColorStop(0.52, "rgba(224, 242, 254, 0.11)");
+    bandGradient.addColorStop(0.78, "rgba(34, 211, 238, 0.06)");
+    bandGradient.addColorStop(1, "rgba(56, 189, 248, 0)");
+
+    for (let index = 0; index < (mobile ? 3 : 5); index += 1) {
+      context.beginPath();
+      context.strokeStyle = bandGradient;
+      context.lineWidth = (mobile ? 18 : 28) + index * 9;
+      context.globalAlpha = 0.18 - index * 0.022;
+      context.moveTo(-width * 0.08, height * (0.62 + index * 0.014) + shift);
+      context.bezierCurveTo(width * 0.24, height * 0.44 + shift * 0.6, width * 0.58, height * 0.34 - shift * 0.45, width * 1.08, height * (0.22 + index * 0.016));
+      context.stroke();
+    }
+    context.restore();
+  };
+
+  const drawGalaxyRing = (time) => {
+    const galaxy = getGalaxy();
+    const phase = reducedMotion ? 0 : time * 0.000045;
+    const parallaxX = isMobile() ? 0 : (pointerX / Math.max(width, 1) - 0.5) * 12;
+    const parallaxY = isMobile() ? 0 : (pointerY / Math.max(height, 1) - 0.5) * 8;
+
+    context.save();
+    context.translate(galaxy.x + parallaxX, galaxy.y + parallaxY);
+    context.rotate(galaxy.tilt + Math.sin(phase) * 0.025);
+    context.globalCompositeOperation = "screen";
+    context.lineCap = "round";
+
+    const layers = [
+      { scale: 1.0, alpha: 0.18, width: 1.25, color: "rgba(191, 219, 254, 0.48)", start: 0.03, end: 1.86 },
+      { scale: 0.94, alpha: 0.12, width: 2.1, color: "rgba(56, 189, 248, 0.34)", start: 0.16, end: 1.72 },
+      { scale: 1.06, alpha: 0.10, width: 1.5, color: "rgba(250, 204, 21, 0.28)", start: 0.28, end: 1.54 },
+      { scale: 1.14, alpha: 0.07, width: 3.2, color: "rgba(224, 242, 254, 0.24)", start: -0.02, end: 1.92 }
+    ];
+
+    layers.forEach((layer, index) => {
+      const radius = galaxy.radius * layer.scale;
+      context.beginPath();
+      context.globalAlpha = layer.alpha;
+      context.lineWidth = layer.width;
+      context.strokeStyle = layer.color;
+      context.ellipse(0, 0, radius, radius * galaxy.scaleY * (1 + index * 0.018), 0, Math.PI * (layer.start + phase * (index + 1)), Math.PI * (layer.end + phase * (index + 1)), false);
+      context.stroke();
+    });
+
+    ringWisps.forEach((wisp) => {
+      const radius = galaxy.radius * wisp.radiusScale;
+      const start = wisp.start + time * wisp.speed;
+      const end = start + wisp.length;
+      context.beginPath();
+      context.globalAlpha = wisp.alpha;
+      context.lineWidth = wisp.lineWidth;
+      context.strokeStyle = wisp.gold ? "rgba(253, 230, 138, 0.55)" : "rgba(224, 242, 254, 0.44)";
+      context.ellipse(0, 0, radius, radius * galaxy.scaleY * wisp.yScale, 0, start, end, false);
+      context.stroke();
+    });
+
+    context.restore();
+  };
+
   const drawStars = (time) => {
+    const mobile = isMobile();
+    const parallax = mobile ? 0 : (pointerX / Math.max(width, 1) - 0.5) * 5;
+
     stars.forEach((star) => {
       if (!reducedMotion) {
-        star.y += star.speed;
-        star.x += Math.sin(time * 0.00012 + star.phase) * 0.012;
-        if (star.y > height + 6) {
-          star.y = -6;
-          star.x = Math.random() * width;
-        }
+        star.x += star.drift * (star.layer === "near" ? 0.44 : 0.26);
+        star.y += star.drift * (star.layer === "far" ? 0.13 : 0.2);
+        if (star.x > width + 8) star.x = -8;
+        if (star.y > height + 8) star.y = -8;
       }
 
-      const alpha = 0.34 + Math.sin(time * 0.001 * star.twinkle + star.phase) * 0.22;
+      const twinkle = Math.sin(time * 0.001 * star.twinkle + star.phase);
+      const alpha = Math.max(0.08, star.alpha + twinkle * (star.layer === "far" ? 0.05 : 0.16));
+      const x = star.x + parallax * (star.layer === "near" ? 1 : star.layer === "mid" ? 0.48 : 0.18);
+      const y = star.y;
+
+      if (star.layer === "near") {
+        const glow = context.createRadialGradient(x, y, 0, x, y, star.r * 5.5);
+        glow.addColorStop(0, `rgba(${star.hue}, ${alpha * 0.24})`);
+        glow.addColorStop(1, `rgba(${star.hue}, 0)`);
+        context.fillStyle = glow;
+        context.beginPath();
+        context.arc(x, y, star.r * 5.5, 0, TAU);
+        context.fill();
+      }
+
+      context.fillStyle = `rgba(${star.hue}, ${alpha})`;
       context.beginPath();
-      context.fillStyle = `rgba(219, 242, 255, ${Math.max(0.15, alpha)})`;
-      context.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+      context.arc(x, y, star.r, 0, TAU);
       context.fill();
     });
   };
 
-  const drawClothGrid = (time) => {
-    const mobile = isMobile();
-    const spacing = mobile ? 92 : 74;
-    const wave = reducedMotion ? 0 : time * 0.00028;
-    const parallaxX = mobile ? 0 : (pointerX / Math.max(width, 1) - 0.5) * 18;
-    const parallaxY = mobile ? 0 : (pointerY / Math.max(height, 1) - 0.5) * 12;
+  const drawGoldDust = (time) => {
+    const galaxy = getGalaxy();
+    const phase = reducedMotion ? 0 : time;
+    const sinTilt = Math.sin(galaxy.tilt);
+    const cosTilt = Math.cos(galaxy.tilt);
 
-    context.lineWidth = 1;
-    context.strokeStyle = mobile ? "rgba(34, 211, 238, 0.055)" : "rgba(34, 211, 238, 0.075)";
+    context.save();
+    context.globalCompositeOperation = "screen";
 
-    for (let y = -spacing; y < height + spacing; y += spacing) {
-      context.beginPath();
-      for (let x = -spacing; x <= width + spacing; x += 18) {
-        const offset = Math.sin(x * 0.012 + wave + y * 0.004) * (mobile ? 9 : 16);
-        const px = x + parallaxX;
-        const py = y + offset + parallaxY;
-        if (x <= -spacing) {
-          context.moveTo(px, py);
-        } else {
-          context.lineTo(px, py);
-        }
+    dust.forEach((particle) => {
+      const angle = particle.angle + phase * particle.speed;
+      const ringRadius = galaxy.radius * (1 + particle.orbit);
+      const localX = Math.cos(angle) * ringRadius;
+      const localY = Math.sin(angle) * ringRadius * galaxy.scaleY + particle.spread;
+      const rotated = {
+        x: localX * cosTilt - localY * sinTilt,
+        y: localX * sinTilt + localY * cosTilt
+      };
+      const x = galaxy.x + rotated.x;
+      const y = galaxy.y + rotated.y;
+
+      if (x < -40 || x > width + 40 || y < -40 || y > height + 40) {
+        return;
       }
-      context.stroke();
-    }
 
-    context.strokeStyle = mobile ? "rgba(124, 58, 237, 0.04)" : "rgba(94, 234, 212, 0.052)";
-    for (let x = -spacing; x < width + spacing; x += spacing) {
+      const shimmer = 0.68 + Math.sin(time * 0.0012 + particle.phase) * 0.32;
+      const alpha = Math.max(0.04, particle.alpha * shimmer);
+      const glow = context.createRadialGradient(x, y, 0, x, y, particle.r * 5.2);
+      glow.addColorStop(0, `rgba(${particle.color}, ${alpha * 0.38})`);
+      glow.addColorStop(1, `rgba(${particle.color}, 0)`);
+      context.fillStyle = glow;
       context.beginPath();
-      for (let y = -spacing; y <= height + spacing; y += 18) {
-        const offset = Math.cos(y * 0.012 + wave + x * 0.004) * (mobile ? 7 : 13);
-        const px = x + offset + parallaxX * 0.4;
-        const py = y + parallaxY * 0.4;
-        if (y <= -spacing) {
-          context.moveTo(px, py);
-        } else {
-          context.lineTo(px, py);
-        }
-      }
-      context.stroke();
-    }
+      context.arc(x, y, particle.r * 5.2, 0, TAU);
+      context.fill();
+
+      context.fillStyle = `rgba(${particle.color}, ${alpha})`;
+      context.beginPath();
+      context.arc(x, y, particle.r, 0, TAU);
+      context.fill();
+    });
+
+    context.restore();
   };
 
-  const drawEnergyLines = (time) => {
-    particles.forEach((particle) => {
+  const drawMeteors = (time) => {
+    if (!reducedMotion && time > nextMeteorAt && meteors.length < 2) {
+      meteors.push({
+        x: randomBetween(width * 0.42, width * 0.98),
+        y: randomBetween(-height * 0.08, height * 0.28),
+        length: randomBetween(90, isMobile() ? 130 : 190),
+        speed: randomBetween(0.62, 0.96),
+        life: 0,
+        maxLife: randomBetween(900, 1500),
+        angle: randomBetween(2.24, 2.48)
+      });
+      nextMeteorAt = time + randomBetween(9000, isMobile() ? 18000 : 14000);
+    }
+
+    meteors = meteors.filter((meteor) => meteor.life < meteor.maxLife && meteor.x > -meteor.length && meteor.y < height + meteor.length);
+    meteors.forEach((meteor) => {
+      meteor.life += Math.max(16, lastTime ? time - lastTime : 16);
       if (!reducedMotion) {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        if (particle.x < -160 || particle.x > width + 160 || particle.y < -120 || particle.y > height + 120) {
-          particle.x = Math.random() * width;
-          particle.y = Math.random() * height;
-        }
+        meteor.x += Math.cos(meteor.angle) * meteor.speed * 3.2;
+        meteor.y += Math.sin(meteor.angle) * meteor.speed * 3.2;
       }
 
-      const angle = Math.sin(time * 0.00042 + particle.phase) * 0.8;
-      const endX = particle.x + Math.cos(angle) * particle.length;
-      const endY = particle.y + Math.sin(angle) * particle.length;
-      const line = context.createLinearGradient(particle.x, particle.y, endX, endY);
-      line.addColorStop(0, "rgba(34, 211, 238, 0)");
-      line.addColorStop(0.5, particle.hue === "#22d3ee" ? "rgba(34, 211, 238, 0.24)" : "rgba(94, 234, 212, 0.22)");
-      line.addColorStop(1, "rgba(124, 58, 237, 0)");
-      context.strokeStyle = line;
-      context.lineWidth = 1.2;
+      const tailX = meteor.x - Math.cos(meteor.angle) * meteor.length;
+      const tailY = meteor.y - Math.sin(meteor.angle) * meteor.length;
+      const alpha = Math.sin(Math.min(1, meteor.life / meteor.maxLife) * Math.PI) * 0.32;
+      const gradient = context.createLinearGradient(meteor.x, meteor.y, tailX, tailY);
+      gradient.addColorStop(0, `rgba(224, 242, 254, ${alpha})`);
+      gradient.addColorStop(0.32, `rgba(56, 189, 248, ${alpha * 0.42})`);
+      gradient.addColorStop(1, "rgba(56, 189, 248, 0)");
+      context.strokeStyle = gradient;
+      context.lineWidth = isMobile() ? 1 : 1.35;
       context.beginPath();
-      context.moveTo(particle.x, particle.y);
-      context.lineTo(endX, endY);
+      context.moveTo(meteor.x, meteor.y);
+      context.lineTo(tailX, tailY);
       context.stroke();
     });
   };
 
+  const drawSubtleGrid = (time) => {
+    const mobile = isMobile();
+    const spacing = mobile ? 112 : 96;
+    const wave = reducedMotion ? 0 : time * 0.00013;
+
+    context.save();
+    context.strokeStyle = mobile ? "rgba(34, 211, 238, 0.026)" : "rgba(34, 211, 238, 0.034)";
+    context.lineWidth = 1;
+
+    for (let y = height * 0.46; y < height + spacing; y += spacing) {
+      context.beginPath();
+      for (let x = -spacing; x <= width + spacing; x += 26) {
+        const py = y + Math.sin(x * 0.008 + wave + y * 0.003) * (mobile ? 8 : 13);
+        if (x <= -spacing) context.moveTo(x, py);
+        else context.lineTo(x, py);
+      }
+      context.stroke();
+    }
+    context.restore();
+  };
+
   const render = (time = 0) => {
-    drawNebula(time);
+    context.clearRect(0, 0, width, height);
+    drawSpaceBase(time);
+    drawNebulaBands(time);
+    drawGalaxyRing(time);
     drawStars(time);
-    drawClothGrid(time);
-    drawEnergyLines(time);
+    drawGoldDust(time);
+    drawMeteors(time);
+    drawSubtleGrid(time);
+    lastTime = time;
   };
 
   const animate = (time) => {
@@ -261,14 +471,28 @@ const initCosmicBackground = () => {
 
     if (!document.hidden) {
       frameSkip += 1;
-      const skip = reducedMotion ? 18 : isMobile() ? 2 : 1;
+      const skip = reducedMotion ? 24 : isMobile() ? 2 : 1;
       if (frameSkip >= skip) {
         frameSkip = 0;
         render(time);
       }
     }
 
+    rafId = reducedMotion ? 0 : window.requestAnimationFrame(animate);
+  };
+
+  const startAnimation = () => {
+    if (!running || reducedMotion || rafId) {
+      return;
+    }
     rafId = window.requestAnimationFrame(animate);
+  };
+
+  const stopAnimation = () => {
+    if (rafId) {
+      window.cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
   };
 
   window.addEventListener("resize", resize, { passive: true });
@@ -281,30 +505,29 @@ const initCosmicBackground = () => {
   }, { passive: true });
 
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && running && !rafId) {
-      rafId = window.requestAnimationFrame(animate);
+    if (document.hidden) {
+      stopAnimation();
+      return;
     }
+    render(performance.now());
+    startAnimation();
   });
 
   reducedMotionQuery?.addEventListener?.("change", (event) => {
     reducedMotion = Boolean(event.matches);
+    stopAnimation();
     buildScene();
-    render(0);
+    render(performance.now());
+    startAnimation();
   });
 
   resize();
   render(0);
-
-  if (!reducedMotion) {
-    rafId = window.requestAnimationFrame(animate);
-  }
+  startAnimation();
 
   window.addEventListener("beforeunload", () => {
     running = false;
-    if (rafId) {
-      window.cancelAnimationFrame(rafId);
-      rafId = 0;
-    }
+    stopAnimation();
   });
 };
 
