@@ -1186,6 +1186,7 @@ const renderAdminDemo = () => {
         <div>
           <p class="eyebrow">Orders</p>
           <h2>订单管理</h2>
+          <p>预留卡密和演示发货按钮只用于验证后台流程，不会发放真实卡密。</p>
         </div>
         <span class="api-status-pill" data-admin-order-source data-state="pending">读取中</span>
       </div>
@@ -1214,6 +1215,7 @@ const renderAdminDemo = () => {
         <div>
           <p class="eyebrow">Cards</p>
           <h2>卡密管理</h2>
+          <p>这里只展示脱敏卡密字段，真实卡密不会在后台页面显示。</p>
         </div>
         <span class="api-status-pill" data-admin-card-source data-state="pending">正在读取卡密库存</span>
       </div>
