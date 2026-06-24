@@ -44,6 +44,22 @@
       </div>
     </section>
 
+    <section class="section admin-access-panel" aria-labelledby="admin-access-title">
+      <div>
+        <p class="eyebrow">Admin Access</p>
+        <h2 id="admin-access-title">管理员访问</h2>
+        <p>当前为演示后台，管理 API 需要访问口令。</p>
+      </div>
+      <form class="admin-access-form" data-admin-access-form>
+        <label for="admin-access-key">访问口令</label>
+        <input id="admin-access-key" name="adminKey" type="password" placeholder="输入管理员访问口令" autocomplete="off" data-admin-key-input>
+        <div class="admin-access-actions">
+          <button class="button primary compact-button" type="submit">保存访问口令</button>
+          <button class="button secondary compact-button" type="button" data-clear-admin-key>清除访问口令</button>
+        </div>
+      </form>
+    </section>
+
     <section class="section admin-console" data-admin-demo>
       <article class="info-card">
         <span class="status-pill">加载中</span>

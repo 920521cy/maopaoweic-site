@@ -55,3 +55,19 @@ https://maopaoweic.top/api/db-health
 ```
 
 如果尚未绑定 D1，接口会返回 `503` 和 `D1 binding DB is not configured`。
+
+## 5. 配置后台管理密钥
+
+v0.6.0 开始，所有 `/api/admin/*` 后台接口都需要请求头 `x-admin-key`。服务端会读取 Cloudflare Pages 环境变量 `ADMIN_API_KEY` 进行校验。
+
+在 Cloudflare Pages 项目中配置：
+
+1. 打开 `Settings`。
+2. 进入 `Environment variables`。
+3. 新增变量：
+
+```text
+ADMIN_API_KEY=change-me-in-cloudflare
+```
+
+这里的值只是示例，不要提交或公开真实后台口令。配置完成后需要重新部署 Pages，新的环境变量才会在 Functions 中生效。

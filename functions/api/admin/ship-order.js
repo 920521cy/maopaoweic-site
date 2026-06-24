@@ -1,3 +1,5 @@
+import { validateAdminRequest } from "../../shared/admin-auth.js";
+
 const json = (data, init = {}) => new Response(JSON.stringify(data), {
   ...init,
   headers: {
@@ -24,6 +26,12 @@ export async function onRequest(context) {
       ok: false,
       error: "Method not allowed"
     }, { status: 405 });
+  }
+
+  const authResponse = validateAdminRequest(context);
+
+  if (authResponse) {
+    return authResponse;
   }
 
   if (!env?.DB) {

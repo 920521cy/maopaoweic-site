@@ -8,6 +8,35 @@ const siteData = window.SITE_DATA || {};
 const products = Array.isArray(siteData.products) ? siteData.products : [];
 const demoOrders = Array.isArray(siteData.demoOrders) ? siteData.demoOrders : [];
 const demoCards = Array.isArray(siteData.demoCards) ? siteData.demoCards : [];
+const ADMIN_KEY_STORAGE_KEY = "maopaoweic.adminKey";
+const ADMIN_AUTH_REQUIRED_MESSAGE = "需要管理员访问口令后才能读取后台数据";
+const ADMIN_CONFIG_REQUIRED_MESSAGE = "需要配置后台管理密钥";
+
+const getStoredAdminKey = () => {
+  try {
+    return String(window.sessionStorage?.getItem(ADMIN_KEY_STORAGE_KEY) || "").trim();
+  } catch {
+    return "";
+  }
+};
+
+const saveStoredAdminKey = (value) => {
+  try {
+    window.sessionStorage?.setItem(ADMIN_KEY_STORAGE_KEY, String(value || "").trim());
+  } catch {
+    // Ignore storage failures so the static admin page remains usable.
+  }
+};
+
+const clearStoredAdminKey = () => {
+  try {
+    window.sessionStorage?.removeItem(ADMIN_KEY_STORAGE_KEY);
+  } catch {
+    // Ignore storage failures so the static admin page remains usable.
+  }
+};
+
+const hasStoredAdminKey = () => Boolean(getStoredAdminKey());
 
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;",
@@ -154,27 +183,68 @@ const createDemoOrder = async (productSlug) => {
   }
 };
 
-const loadAdminOrdersFromApi = async () => {
+const fetchAdminJson = async (url, options = {}) => {
+  const adminKey = getStoredAdminKey();
+
+  if (!adminKey) {
+    return {
+      ok: false,
+      status: 0,
+      authRequired: true,
+      data: null
+    };
+  }
+
   if (!window.fetch) {
     return null;
   }
 
   try {
-    const response = await fetch("/api/admin/orders", {
-      headers: {
-        Accept: "application/json"
-      }
-    });
-    const data = await response.json();
+    const headers = new Headers(options.headers || {});
+    headers.set("Accept", headers.get("Accept") || "application/json");
+    headers.set("x-admin-key", adminKey);
 
-    if (!response.ok || data?.ok !== true || !Array.isArray(data.orders)) {
-      return null;
+    const response = await fetch(url, {
+      ...options,
+      headers
+    });
+    let data = null;
+
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
     }
 
-    return data.orders.map(normalizeOrderFromApi);
+    if (response.status === 401) {
+      showToast("管理员访问口令不正确");
+    }
+
+    if (response.status === 503) {
+      showToast("后台管理密钥尚未配置");
+    }
+
+    return {
+      ok: response.ok && data?.ok === true,
+      status: response.status,
+      data
+    };
   } catch {
     return null;
   }
+};
+
+const loadAdminOrdersFromApi = async () => {
+  const result = await fetchAdminJson("/api/admin/orders");
+
+  if (!result?.ok || !Array.isArray(result.data?.orders)) {
+    return result;
+  }
+
+  return {
+    ok: true,
+    orders: result.data.orders.map(normalizeOrderFromApi)
+  };
 };
 
 const normalizeCardKeyFromApi = (card = {}) => ({
@@ -200,26 +270,16 @@ const normalizeDemoCard = (card = {}) => ({
 });
 
 const loadAdminCardKeysFromApi = async () => {
-  if (!window.fetch) {
-    return null;
+  const result = await fetchAdminJson("/api/admin/card-keys");
+
+  if (!result?.ok || !Array.isArray(result.data?.cardKeys)) {
+    return result;
   }
 
-  try {
-    const response = await fetch("/api/admin/card-keys", {
-      headers: {
-        Accept: "application/json"
-      }
-    });
-    const data = await response.json();
-
-    if (!response.ok || data?.ok !== true || !Array.isArray(data.cardKeys)) {
-      return null;
-    }
-
-    return data.cardKeys.map(normalizeCardKeyFromApi);
-  } catch {
-    return null;
-  }
+  return {
+    ok: true,
+    cardKeys: result.data.cardKeys.map(normalizeCardKeyFromApi)
+  };
 };
 
 const reserveDemoCardForOrder = async (orderId) => {
@@ -229,33 +289,27 @@ const reserveDemoCardForOrder = async (orderId) => {
     return null;
   }
 
-  try {
-    const response = await fetch("/api/admin/reserve-card", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ orderId: normalizedOrderId })
-    });
-    const data = await response.json();
+  const result = await fetchAdminJson("/api/admin/reserve-card", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ orderId: normalizedOrderId })
+  });
 
-    if (!response.ok || data?.ok !== true || !data.reservation) {
-      return {
-        ok: false,
-        status: response.status,
-        message: data?.message || "Unable to reserve demo card key"
-      };
-    }
-
+  if (result?.ok && result.data?.reservation) {
     return {
       ok: true,
-      message: data.message || "演示卡密库存已为该订单预留，当前不会发放真实卡密",
-      reservation: data.reservation
+      message: result.data.message || "演示卡密库存已为该订单预留，当前不会发放真实卡密",
+      reservation: result.data.reservation
     };
-  } catch {
-    return null;
   }
+
+  return {
+    ok: false,
+    status: result?.status,
+    message: result?.data?.message || "Unable to reserve demo card key"
+  };
 };
 
 const shipDemoOrder = async (orderId) => {
@@ -265,33 +319,27 @@ const shipDemoOrder = async (orderId) => {
     return null;
   }
 
-  try {
-    const response = await fetch("/api/admin/ship-order", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ orderId: normalizedOrderId })
-    });
-    const data = await response.json();
+  const result = await fetchAdminJson("/api/admin/ship-order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ orderId: normalizedOrderId })
+  });
 
-    if (!response.ok || data?.ok !== true || !data.shipment) {
-      return {
-        ok: false,
-        status: response.status,
-        message: data?.message || "Unable to complete demo shipment"
-      };
-    }
-
+  if (result?.ok && result.data?.shipment) {
     return {
       ok: true,
-      message: data.message || "演示发货已完成，当前不会显示或发送真实卡密",
-      shipment: data.shipment
+      message: result.data.message || "演示发货已完成，当前不会显示或发送真实卡密",
+      shipment: result.data.shipment
     };
-  } catch {
-    return null;
   }
+
+  return {
+    ok: false,
+    status: result?.status,
+    message: result?.data?.message || "Unable to complete demo shipment"
+  };
 };
 
 const fetchOrderDetail = async (orderId) => {
@@ -424,6 +472,22 @@ const renderAdminProductManagement = async () => {
   }
 };
 
+const getAdminUnavailableMessage = (result) => {
+  if (result?.authRequired) {
+    return ADMIN_AUTH_REQUIRED_MESSAGE;
+  }
+
+  if (result?.status === 503) {
+    return ADMIN_CONFIG_REQUIRED_MESSAGE;
+  }
+
+  if (result?.status === 401) {
+    return "管理员访问口令不正确";
+  }
+
+  return "后台数据暂时不可用，请稍后再试";
+};
+
 const renderAdminOrderRows = (items = demoOrders, sourceLabel = "本地演示订单") => {
   if (!items.length) {
     return `<tr><td colspan="7">暂无订单数据。</td></tr>`;
@@ -467,16 +531,36 @@ const renderAdminOrderManagement = async () => {
     return;
   }
 
-  const apiOrders = await loadAdminOrdersFromApi();
-  const usingApiOrders = Array.isArray(apiOrders);
-  const sourceOrders = usingApiOrders ? apiOrders : demoOrders;
-  const sourceLabel = usingApiOrders ? "D1 订单数据" : "本地演示订单";
+  if (!hasStoredAdminKey()) {
+    tableBody.innerHTML = `<tr><td colspan="7">${ADMIN_AUTH_REQUIRED_MESSAGE}</td></tr>`;
 
-  tableBody.innerHTML = renderAdminOrderRows(sourceOrders, sourceLabel);
+    if (sourceStatus) {
+      sourceStatus.textContent = ADMIN_AUTH_REQUIRED_MESSAGE;
+      sourceStatus.dataset.state = "offline";
+    }
+
+    return;
+  }
+
+  const result = await loadAdminOrdersFromApi();
+
+  if (!result?.ok) {
+    const message = getAdminUnavailableMessage(result);
+    tableBody.innerHTML = `<tr><td colspan="7">${escapeHtml(message)}</td></tr>`;
+
+    if (sourceStatus) {
+      sourceStatus.textContent = message;
+      sourceStatus.dataset.state = result?.status === 503 ? "unbound" : "offline";
+    }
+
+    return;
+  }
+
+  tableBody.innerHTML = renderAdminOrderRows(result.orders, "D1 订单数据");
 
   if (sourceStatus) {
-    sourceStatus.textContent = `当前显示：${sourceLabel}`;
-    sourceStatus.dataset.state = usingApiOrders ? "connected" : "offline";
+    sourceStatus.textContent = "当前显示：D1 订单数据";
+    sourceStatus.dataset.state = "connected";
   }
 };
 
@@ -515,16 +599,36 @@ const renderAdminCardManagement = async () => {
     return;
   }
 
-  const apiCards = await loadAdminCardKeysFromApi();
-  const usingApiCards = Array.isArray(apiCards);
-  const sourceCards = usingApiCards ? apiCards : demoCards.map(normalizeDemoCard);
-  const sourceLabel = usingApiCards ? "D1 卡密库存" : "本地演示卡密";
+  if (!hasStoredAdminKey()) {
+    tableBody.innerHTML = `<tr><td colspan="8">${ADMIN_AUTH_REQUIRED_MESSAGE}</td></tr>`;
 
-  tableBody.innerHTML = renderAdminCardRows(sourceCards, sourceLabel);
+    if (sourceStatus) {
+      sourceStatus.textContent = ADMIN_AUTH_REQUIRED_MESSAGE;
+      sourceStatus.dataset.state = "offline";
+    }
+
+    return;
+  }
+
+  const result = await loadAdminCardKeysFromApi();
+
+  if (!result?.ok) {
+    const message = getAdminUnavailableMessage(result);
+    tableBody.innerHTML = `<tr><td colspan="8">${escapeHtml(message)}</td></tr>`;
+
+    if (sourceStatus) {
+      sourceStatus.textContent = message;
+      sourceStatus.dataset.state = result?.status === 503 ? "unbound" : "offline";
+    }
+
+    return;
+  }
+
+  tableBody.innerHTML = renderAdminCardRows(result.cardKeys, "D1 卡密库存");
 
   if (sourceStatus) {
-    sourceStatus.textContent = `当前显示：${sourceLabel}`;
-    sourceStatus.dataset.state = usingApiCards ? "connected" : "offline";
+    sourceStatus.textContent = "当前显示：D1 卡密库存";
+    sourceStatus.dataset.state = "connected";
   }
 };
 
@@ -575,7 +679,7 @@ const renderAdminDbStats = async () => {
     return;
   }
 
-  const renderUnavailable = () => {
+  const renderUnavailable = (message = "静态演示区域仍可正常查看；真实数据库统计需要部署到 Cloudflare Pages 并绑定 D1 后验证。", state = "offline") => {
     container.innerHTML = `
       <div class="admin-panel-header">
         <div>
@@ -583,83 +687,76 @@ const renderAdminDbStats = async () => {
           <h2>真实 D1 统计数据</h2>
           <p>演示阶段，尚未接入管理员登录。</p>
         </div>
-        <span class="api-status-pill" data-state="offline">当前环境无法读取数据库统计，可能是本地预览或 D1 未绑定</span>
+        <span class="api-status-pill" data-state="${escapeHtml(state)}">${escapeHtml(message)}</span>
       </div>
       <div class="admin-db-state">
-        <p>静态演示区域仍可正常查看；真实数据库统计需要部署到 Cloudflare Pages 并绑定 D1 后验证。</p>
+        <p>${escapeHtml(message)}</p>
       </div>
     `;
   };
 
-  if (!window.fetch) {
-    renderUnavailable();
+  if (!hasStoredAdminKey()) {
+    renderUnavailable(ADMIN_AUTH_REQUIRED_MESSAGE);
     return;
   }
 
-  try {
-    const response = await fetch("/api/admin/stats", {
-      headers: {
-        Accept: "application/json"
-      }
-    });
-    const data = await response.json();
+  const result = await fetchAdminJson("/api/admin/stats");
 
-    if (!response.ok || data?.ok !== true) {
-      renderUnavailable();
-      return;
-    }
-
-    const totals = data.stats?.totals || {};
-
-    container.innerHTML = `
-      <div class="admin-panel-header">
-        <div>
-          <p class="eyebrow">Real D1 Stats</p>
-          <h2>真实 D1 统计数据</h2>
-          <p>演示阶段，尚未接入管理员登录。</p>
-        </div>
-        <span class="api-status-pill" data-state="connected">已连接真实 D1 统计</span>
-      </div>
-
-      <div class="admin-db-grid">
-        <article class="admin-stat-card">
-          <span>商品表记录数</span>
-          <strong>${escapeHtml(totals.products ?? 0)}</strong>
-          <p>products</p>
-        </article>
-        <article class="admin-stat-card">
-          <span>订单表记录数</span>
-          <strong>${escapeHtml(totals.orders ?? 0)}</strong>
-          <p>orders</p>
-        </article>
-        <article class="admin-stat-card">
-          <span>卡密表记录数</span>
-          <strong>${escapeHtml(totals.cardKeys ?? 0)}</strong>
-          <p>card_keys</p>
-        </article>
-        <article class="admin-stat-card">
-          <span>管理日志记录数</span>
-          <strong>${escapeHtml(totals.adminLogs ?? 0)}</strong>
-          <p>admin_logs</p>
-        </article>
-      </div>
-
-      <div class="admin-distribution-grid">
-        <section>
-          <h3>卡密状态分布</h3>
-          ${renderStatusDistribution(data.stats?.cardKeyStatus)}
-        </section>
-        <section>
-          <h3>订单状态分布</h3>
-          ${renderStatusDistribution(data.stats?.orderStatus)}
-        </section>
-      </div>
-
-      <p class="admin-db-timestamp">更新时间：${escapeHtml(data.timestamp || "未知")}</p>
-    `;
-  } catch {
-    renderUnavailable();
+  if (!result?.ok) {
+    const message = getAdminUnavailableMessage(result);
+    renderUnavailable(message, result?.status === 503 ? "unbound" : "offline");
+    return;
   }
+
+  const data = result.data;
+  const totals = data.stats?.totals || {};
+
+  container.innerHTML = `
+    <div class="admin-panel-header">
+      <div>
+        <p class="eyebrow">Real D1 Stats</p>
+        <h2>真实 D1 统计数据</h2>
+        <p>演示阶段，尚未接入管理员登录。</p>
+      </div>
+      <span class="api-status-pill" data-state="connected">已连接真实 D1 统计</span>
+    </div>
+
+    <div class="admin-db-grid">
+      <article class="admin-stat-card">
+        <span>商品表记录数</span>
+        <strong>${escapeHtml(totals.products ?? 0)}</strong>
+        <p>products</p>
+      </article>
+      <article class="admin-stat-card">
+        <span>订单表记录数</span>
+        <strong>${escapeHtml(totals.orders ?? 0)}</strong>
+        <p>orders</p>
+      </article>
+      <article class="admin-stat-card">
+        <span>卡密表记录数</span>
+        <strong>${escapeHtml(totals.cardKeys ?? 0)}</strong>
+        <p>card_keys</p>
+      </article>
+      <article class="admin-stat-card">
+        <span>管理日志记录数</span>
+        <strong>${escapeHtml(totals.adminLogs ?? 0)}</strong>
+        <p>admin_logs</p>
+      </article>
+    </div>
+
+    <div class="admin-distribution-grid">
+      <section>
+        <h3>卡密状态分布</h3>
+        ${renderStatusDistribution(data.stats?.cardKeyStatus)}
+      </section>
+      <section>
+        <h3>订单状态分布</h3>
+        ${renderStatusDistribution(data.stats?.orderStatus)}
+      </section>
+    </div>
+
+    <p class="admin-db-timestamp">更新时间：${escapeHtml(data.timestamp || "未知")}</p>
+  `;
 };
 
 const checkApiHealth = async () => {
@@ -1148,6 +1245,52 @@ const showToast = (message) => {
   }, 2850);
 };
 
+const refreshAdminProtectedData = async () => {
+  await Promise.all([
+    renderAdminProductManagement(),
+    renderAdminOrderManagement(),
+    renderAdminCardManagement(),
+    renderAdminDbStats()
+  ]);
+};
+
+const initAdminAccessControls = () => {
+  const form = document.querySelector("[data-admin-access-form]");
+  const input = document.querySelector("[data-admin-key-input]");
+  const clearButton = document.querySelector("[data-clear-admin-key]");
+
+  if (!form || !input) {
+    return;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const adminKey = String(input.value || "").trim();
+
+    if (!adminKey) {
+      showToast("请输入管理员访问口令");
+      return;
+    }
+
+    saveStoredAdminKey(adminKey);
+    input.value = "";
+    showToast("管理员访问口令已保存");
+    await refreshAdminProtectedData();
+  });
+
+  clearButton?.addEventListener("click", async () => {
+    clearStoredAdminKey();
+    input.value = "";
+    showToast("管理员访问口令已清除");
+    await Promise.all([
+      renderAdminOrderManagement(),
+      renderAdminCardManagement(),
+      renderAdminDbStats()
+    ]);
+  });
+};
+
 if (year) {
   year.textContent = new Date().getFullYear();
 }
@@ -1180,11 +1323,9 @@ renderProductList();
 renderProductDetail();
 renderOrderLookup();
 renderDashboardDemo();
+initAdminAccessControls();
 renderAdminDemo();
-renderAdminProductManagement();
-renderAdminOrderManagement();
-renderAdminCardManagement();
-renderAdminDbStats();
+refreshAdminProtectedData();
 checkApiHealth();
 checkDbHealth();
 
@@ -1269,6 +1410,20 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
+  if (result?.status === 0) {
+    showToast("请先保存管理员访问口令");
+    await Promise.all([
+      renderAdminOrderManagement(),
+      renderAdminCardManagement(),
+      renderAdminDbStats()
+    ]);
+    return;
+  }
+
+  if (result?.status === 401 || result?.status === 503) {
+    return;
+  }
+
   if (result?.status === 409) {
     showToast("该商品暂无可用演示卡密库存");
     return;
@@ -1307,6 +1462,20 @@ document.addEventListener("click", async (event) => {
       renderAdminCardManagement(),
       renderAdminDbStats()
     ]);
+    return;
+  }
+
+  if (result?.status === 0) {
+    showToast("请先保存管理员访问口令");
+    await Promise.all([
+      renderAdminOrderManagement(),
+      renderAdminCardManagement(),
+      renderAdminDbStats()
+    ]);
+    return;
+  }
+
+  if (result?.status === 401 || result?.status === 503) {
     return;
   }
 
