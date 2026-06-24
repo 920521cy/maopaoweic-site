@@ -49,8 +49,13 @@
         <p class="eyebrow">Admin Access</p>
         <h2 id="admin-access-title">管理员访问</h2>
         <p>当前为演示后台，管理 API 需要访问口令。</p>
+        <p class="admin-access-security">当前只是后台 API 访问保护，不是正式用户登录系统。</p>
       </div>
       <form class="admin-access-form" data-admin-access-form>
+        <div class="admin-access-state">
+          <span class="admin-access-status admin-access-status-unauthorized" data-admin-access-status data-state="unauthorized">未授权</span>
+          <p data-admin-access-message>需要管理员访问口令后才能读取真实后台数据。</p>
+        </div>
         <label for="admin-access-key">访问口令</label>
         <input id="admin-access-key" name="adminKey" type="password" placeholder="输入管理员访问口令" autocomplete="off" data-admin-key-input>
         <div class="admin-access-actions">

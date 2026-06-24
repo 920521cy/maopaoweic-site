@@ -9,8 +9,29 @@ const products = Array.isArray(siteData.products) ? siteData.products : [];
 const demoOrders = Array.isArray(siteData.demoOrders) ? siteData.demoOrders : [];
 const demoCards = Array.isArray(siteData.demoCards) ? siteData.demoCards : [];
 const ADMIN_KEY_STORAGE_KEY = "maopaoweic.adminKey";
-const ADMIN_AUTH_REQUIRED_MESSAGE = "需要管理员访问口令后才能读取后台数据";
-const ADMIN_CONFIG_REQUIRED_MESSAGE = "需要配置后台管理密钥";
+const ADMIN_AUTH_REQUIRED_MESSAGE = "需要管理员访问口令后才能读取真实后台数据。";
+const ADMIN_AUTH_INVALID_MESSAGE = "管理员访问口令不正确，请重新输入。";
+const ADMIN_CONFIG_REQUIRED_MESSAGE = "Cloudflare 尚未配置 ADMIN_API_KEY。";
+const ADMIN_AUTH_SAVED_MESSAGE = "管理员口令已保存到当前会话，关闭浏览器后失效。";
+const ADMIN_AUTH_CLEARED_MESSAGE = "管理员口令已清除。";
+const ADMIN_ACCESS_STATES = {
+  unauthorized: {
+    label: "未授权",
+    message: ADMIN_AUTH_REQUIRED_MESSAGE
+  },
+  authorized: {
+    label: "已授权，仅当前浏览器会话有效",
+    message: ADMIN_AUTH_SAVED_MESSAGE
+  },
+  invalid: {
+    label: "口令错误",
+    message: ADMIN_AUTH_INVALID_MESSAGE
+  },
+  unconfigured: {
+    label: "后台密钥未配置",
+    message: ADMIN_CONFIG_REQUIRED_MESSAGE
+  }
+};
 
 const getStoredAdminKey = () => {
   try {
@@ -37,6 +58,22 @@ const clearStoredAdminKey = () => {
 };
 
 const hasStoredAdminKey = () => Boolean(getStoredAdminKey());
+
+const setAdminAccessState = (state = "unauthorized", message) => {
+  const status = document.querySelector("[data-admin-access-status]");
+  const statusMessage = document.querySelector("[data-admin-access-message]");
+  const config = ADMIN_ACCESS_STATES[state] || ADMIN_ACCESS_STATES.unauthorized;
+
+  if (status) {
+    status.textContent = config.label;
+    status.dataset.state = state;
+    status.className = `admin-access-status admin-access-status-${state}`;
+  }
+
+  if (statusMessage) {
+    statusMessage.textContent = message || config.message;
+  }
+};
 
 const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
   "&": "&amp;",
@@ -187,6 +224,7 @@ const fetchAdminJson = async (url, options = {}) => {
   const adminKey = getStoredAdminKey();
 
   if (!adminKey) {
+    setAdminAccessState("unauthorized");
     return {
       ok: false,
       status: 0,
@@ -218,10 +256,16 @@ const fetchAdminJson = async (url, options = {}) => {
 
     if (response.status === 401) {
       showToast("管理员访问口令不正确");
+      setAdminAccessState("invalid");
     }
 
     if (response.status === 503) {
       showToast("后台管理密钥尚未配置");
+      setAdminAccessState("unconfigured");
+    }
+
+    if (response.ok && data?.ok === true) {
+      setAdminAccessState("authorized");
     }
 
     return {
@@ -482,7 +526,7 @@ const getAdminUnavailableMessage = (result) => {
   }
 
   if (result?.status === 401) {
-    return "管理员访问口令不正确";
+    return ADMIN_AUTH_INVALID_MESSAGE;
   }
 
   return "后台数据暂时不可用，请稍后再试";
@@ -532,6 +576,7 @@ const renderAdminOrderManagement = async () => {
   }
 
   if (!hasStoredAdminKey()) {
+    setAdminAccessState("unauthorized");
     tableBody.innerHTML = `<tr><td colspan="7">${ADMIN_AUTH_REQUIRED_MESSAGE}</td></tr>`;
 
     if (sourceStatus) {
@@ -600,6 +645,7 @@ const renderAdminCardManagement = async () => {
   }
 
   if (!hasStoredAdminKey()) {
+    setAdminAccessState("unauthorized");
     tableBody.innerHTML = `<tr><td colspan="8">${ADMIN_AUTH_REQUIRED_MESSAGE}</td></tr>`;
 
     if (sourceStatus) {
@@ -696,6 +742,7 @@ const renderAdminDbStats = async () => {
   };
 
   if (!hasStoredAdminKey()) {
+    setAdminAccessState("unauthorized");
     renderUnavailable(ADMIN_AUTH_REQUIRED_MESSAGE);
     return;
   }
@@ -1270,24 +1317,27 @@ const initAdminAccessControls = () => {
 
     if (!adminKey) {
       showToast("请输入管理员访问口令");
+      setAdminAccessState("unauthorized");
       return;
     }
 
     saveStoredAdminKey(adminKey);
     input.value = "";
-    showToast("管理员访问口令已保存");
+    setAdminAccessState("unauthorized", ADMIN_AUTH_SAVED_MESSAGE);
+    showToast(ADMIN_AUTH_SAVED_MESSAGE);
     await refreshAdminProtectedData();
   });
 
   clearButton?.addEventListener("click", async () => {
     clearStoredAdminKey();
     input.value = "";
-    showToast("管理员访问口令已清除");
+    showToast(ADMIN_AUTH_CLEARED_MESSAGE);
     await Promise.all([
       renderAdminOrderManagement(),
       renderAdminCardManagement(),
       renderAdminDbStats()
     ]);
+    setAdminAccessState("unauthorized", ADMIN_AUTH_CLEARED_MESSAGE);
   });
 };
 

@@ -1325,6 +1325,64 @@ h1 {
   gap: 12px;
 }
 
+.admin-access-security {
+  margin-top: 10px;
+  color: var(--muted-strong);
+  font-size: 14px;
+}
+
+.admin-access-state {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  background: rgba(3, 8, 16, 0.34);
+}
+
+.admin-access-state p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-access-status {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 10px;
+  border: 1px solid rgba(183, 156, 255, 0.28);
+  border-radius: 999px;
+  color: var(--muted-strong);
+  background: rgba(183, 156, 255, 0.08);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-access-status-authorized {
+  border-color: rgba(134, 255, 188, 0.3);
+  color: var(--green);
+  background: rgba(134, 255, 188, 0.08);
+}
+
+.admin-access-status-invalid {
+  border-color: rgba(255, 114, 198, 0.34);
+  color: #ff9ed6;
+  background: rgba(255, 114, 198, 0.09);
+}
+
+.admin-access-status-unconfigured {
+  border-color: rgba(255, 211, 105, 0.34);
+  color: #ffd369;
+  background: rgba(255, 211, 105, 0.09);
+}
+
+.admin-access-status-unauthorized {
+  border-color: rgba(183, 156, 255, 0.28);
+  color: var(--muted-strong);
+  background: rgba(183, 156, 255, 0.08);
+}
+
 .admin-access-form label {
   color: var(--muted-strong);
   font-size: 13px;
