@@ -10,6 +10,7 @@ const demoOrders = Array.isArray(siteData.demoOrders) ? siteData.demoOrders : []
 const demoCards = Array.isArray(siteData.demoCards) ? siteData.demoCards : [];
 const ADMIN_KEY_STORAGE_KEY = "maopaoweic.adminKey";
 const ADMIN_AUTH_REQUIRED_MESSAGE = "需要管理员访问口令后才能读取真实后台数据。";
+const ADMIN_PRODUCT_AUTH_REQUIRED_MESSAGE = "需要管理员访问口令后才能读取后台商品管理数据。";
 const ADMIN_AUTH_INVALID_MESSAGE = "管理员访问口令不正确，请重新输入。";
 const ADMIN_CONFIG_REQUIRED_MESSAGE = "Cloudflare 尚未配置 ADMIN_API_KEY。";
 const ADMIN_AUTH_SAVED_MESSAGE = "管理员口令已保存到当前会话，关闭浏览器后失效。";
@@ -500,6 +501,17 @@ const renderAdminProductManagement = async () => {
   const sourceStatus = document.querySelector("[data-admin-product-source]");
 
   if (!tableBody) {
+    return;
+  }
+
+  if (!hasStoredAdminKey()) {
+    tableBody.innerHTML = `<tr><td colspan="8">${ADMIN_PRODUCT_AUTH_REQUIRED_MESSAGE}</td></tr>`;
+
+    if (sourceStatus) {
+      sourceStatus.textContent = "未授权：需要管理员访问口令";
+      sourceStatus.dataset.state = "offline";
+    }
+
     return;
   }
 
