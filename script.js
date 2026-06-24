@@ -1338,24 +1338,18 @@ const initPaymentQrCards = (root = document) => {
       return;
     }
 
-    const markLoaded = () => {
-      card.classList.add("is-loaded");
-      card.classList.remove("is-missing");
-    };
     const markMissing = () => {
       card.classList.add("is-missing");
-      card.classList.remove("is-loaded");
+    };
+    const markLoaded = () => {
+      card.classList.remove("is-missing");
     };
 
-    image.addEventListener("load", markLoaded, { once: true });
     image.addEventListener("error", markMissing, { once: true });
+    image.addEventListener("load", markLoaded, { once: true });
 
-    if (image.complete) {
-      if (image.naturalWidth > 0) {
-        markLoaded();
-      } else {
-        markMissing();
-      }
+    if (image.complete && image.naturalWidth === 0) {
+      markMissing();
     }
   });
 };

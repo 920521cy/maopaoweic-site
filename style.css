@@ -1239,7 +1239,7 @@ h1 {
 }
 
 .payment-qr-image {
-  display: none;
+  display: block;
   width: min(100%, 220px);
   aspect-ratio: 1;
   border-radius: 8px;
@@ -1247,19 +1247,19 @@ h1 {
   background: #fff;
 }
 
-.payment-qr-card.is-loaded .payment-qr-image {
-  display: block;
-}
-
-.payment-qr-card.is-loaded .payment-qr-fallback {
+.payment-qr-card.is-missing .payment-qr-image {
   display: none;
 }
 
 .payment-qr-fallback {
-  display: grid;
+  display: none;
   place-items: center;
   gap: 12px;
   text-align: center;
+}
+
+.payment-qr-card.is-missing .payment-qr-fallback {
+  display: grid;
 }
 
 .payment-qr-fallback span {
