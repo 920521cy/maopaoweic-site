@@ -1225,6 +1225,62 @@ h1 {
   font-size: 13px;
 }
 
+.payment-qr-card {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 214px;
+  padding: 16px;
+  border: 1px dashed rgba(54, 226, 255, 0.35);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(54, 226, 255, 0.08), transparent 42%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.payment-qr-image {
+  display: none;
+  width: min(100%, 220px);
+  aspect-ratio: 1;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #fff;
+}
+
+.payment-qr-card.is-loaded .payment-qr-image {
+  display: block;
+}
+
+.payment-qr-card.is-loaded .payment-qr-fallback {
+  display: none;
+}
+
+.payment-qr-fallback {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.payment-qr-fallback span {
+  display: inline-grid;
+  place-items: center;
+  width: 84px;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.payment-qr-fallback p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
 .detail-grid,
 .portal-grid {
   display: grid;
@@ -1797,6 +1853,46 @@ h1 {
   gap: 10px;
 }
 
+.admin-manual-payment-flow {
+  display: grid;
+  gap: 14px;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(54, 226, 255, 0.035);
+}
+
+.admin-manual-payment-flow h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.admin-manual-payment-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-manual-payment-steps p {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-manual-payment-steps strong {
+  color: var(--cyan);
+  font-size: 13px;
+}
+
+.admin-manual-payment-steps span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
 .admin-table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -2308,6 +2404,10 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .admin-manual-payment-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .admin-stats-grid,
   .admin-db-grid,
   .admin-roadmap-grid {
@@ -2458,7 +2558,8 @@ h1 {
 
   .order-lookup-form,
   .order-result-grid,
-  .payment-qr-grid {
+  .payment-qr-grid,
+  .admin-manual-payment-steps {
     grid-template-columns: 1fr;
   }
 

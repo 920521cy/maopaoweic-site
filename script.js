@@ -842,8 +842,8 @@ const renderAdminOrderRows = (items = demoOrders, sourceLabel = "本地演示订
 
   const statusNotes = {
     pending: "等待人工付款确认",
-    paid: "已支付，等待处理",
-    shipped: "已发货",
+    paid: "已确认付款，等待后台处理",
+    shipped: "已处理完成",
     demo: "演示订单"
   };
 
@@ -1284,10 +1284,10 @@ const renderProductDetail = async () => {
 const renderOrderResult = (order) => {
   const normalizedStatus = String(order.status || "").toLowerCase();
   const noteByStatus = {
-    pending: "订单已创建，等待人工付款确认。付款时请备注订单号，未确认前不会发货。",
-    paid: "付款已确认，等待后台处理发货。当前不会显示或发送真实卡密。",
+    pending: "等待人工付款确认。付款时必须备注订单号，未确认前不会处理发货。",
+    paid: "已确认付款，等待后台处理。当前不会显示或发送真实卡密。",
     demo: "当前为演示订单，尚未接入真实支付和自动发货。不会显示或发放真实卡密。",
-    shipped: "演示发货已完成。当前仍不会显示或发送真实卡密。"
+    shipped: "已处理完成。当前仍不会显示或发送真实卡密。"
   };
   const note = noteByStatus[normalizedStatus] || "当前为订单查询结果，不显示真实卡密或完整用户邮箱。";
 
@@ -1317,6 +1317,47 @@ const paymentMethodLabels = {
   alipay: "支付宝人工转账",
   wechat: "微信人工转账",
   manual: "人工确认"
+};
+
+const renderPaymentQrCard = ({ label, src, missingText }) => `
+  <div class="payment-qr-card" data-payment-qr-card>
+    <img class="payment-qr-image" src="${escapeHtml(src)}" alt="${escapeHtml(label)}收款码" loading="lazy" data-payment-qr-image>
+    <div class="payment-qr-fallback">
+      <span>${escapeHtml(label)}</span>
+      <p>${escapeHtml(missingText)}</p>
+    </div>
+  </div>
+`;
+
+const initPaymentQrCards = (root = document) => {
+  root.querySelectorAll("[data-payment-qr-card]").forEach((card) => {
+    const image = card.querySelector("[data-payment-qr-image]");
+
+    if (!image) {
+      card.classList.add("is-missing");
+      return;
+    }
+
+    const markLoaded = () => {
+      card.classList.add("is-loaded");
+      card.classList.remove("is-missing");
+    };
+    const markMissing = () => {
+      card.classList.add("is-missing");
+      card.classList.remove("is-loaded");
+    };
+
+    image.addEventListener("load", markLoaded, { once: true });
+    image.addEventListener("error", markMissing, { once: true });
+
+    if (image.complete) {
+      if (image.naturalWidth > 0) {
+        markLoaded();
+      } else {
+        markMissing();
+      }
+    }
+  });
 };
 
 const renderManualPaymentDetail = () => {
@@ -1351,6 +1392,7 @@ const renderManualPaymentDetail = () => {
     const normalizedStatus = String(order.status || "").toLowerCase();
     const method = String(order.paymentMethod || "manual").toLowerCase();
     const methodLabel = paymentMethodLabels[method] || paymentMethodLabels.manual;
+    const paymentNote = `订单号：${order.id}`;
 
     container.dataset.state = "connected";
     container.innerHTML = `
@@ -1358,7 +1400,7 @@ const renderManualPaymentDetail = () => {
         <article class="payment-status-card">
           <p class="eyebrow">Manual Payment</p>
           <h1>人工付款</h1>
-          <p>当前为人工收款流程，尚未接入自动支付接口。付款时请备注订单号，付款后等待后台人工确认；未确认前不会发货，也不会在页面显示真实卡密。</p>
+          <p>当前为人工收款流程，尚未接入自动支付接口。付款时必须备注订单号，付款后由管理员人工确认；未确认前不会处理发货，也不会在页面显示真实卡密。</p>
           <div class="order-result-grid payment-order-summary">
             <p><span>订单号</span><strong>${escapeHtml(order.id)}</strong></p>
             <p><span>商品名称</span><strong>${escapeHtml(order.productTitle)}</strong></p>
@@ -1369,28 +1411,32 @@ const renderManualPaymentDetail = () => {
           </div>
           <div class="payment-actions">
             <button class="button secondary compact-button" type="button" data-copy-order-id="${escapeHtml(order.id)}">复制订单号</button>
-            <a class="button primary compact-button" href="/order.html?id=${encodeURIComponent(order.id)}">查看订单状态</a>
+            <button class="button secondary compact-button" type="button" data-copy-payment-note="${escapeHtml(paymentNote)}">复制付款备注</button>
+            <a class="button primary compact-button" href="/order.html?id=${encodeURIComponent(order.id)}">我已付款，查看订单状态</a>
           </div>
         </article>
 
         <article class="payment-instructions-card">
           <p class="eyebrow">Payment Note</p>
           <h2>付款备注要求</h2>
-          <p>请在转账备注中填写订单号：<strong>${escapeHtml(order.id)}</strong></p>
-          <p>${normalizedStatus === "pending" ? "该订单正在等待人工付款确认。" : escapeHtml(order.deliveryStatus || "订单状态待确认。")}</p>
+          <p>请在转账备注中填写：<strong>${escapeHtml(paymentNote)}</strong></p>
+          <p>${normalizedStatus === "pending" ? "该订单正在等待人工付款确认。管理员确认到账前不会处理发货。" : escapeHtml(order.deliveryStatus || "订单状态待确认。")}</p>
           <div class="payment-qr-grid">
-            <div class="payment-qr-placeholder">
-              <span>WeChat</span>
-              <p>微信收款码占位，正式运营前手动替换</p>
-            </div>
-            <div class="payment-qr-placeholder">
-              <span>Alipay</span>
-              <p>支付宝收款码占位，正式运营前手动替换</p>
-            </div>
+            ${renderPaymentQrCard({
+              label: "微信",
+              src: "/assets/payment/wechat-qr.jpg",
+              missingText: "微信收款码暂未配置"
+            })}
+            ${renderPaymentQrCard({
+              label: "支付宝",
+              src: "/assets/payment/alipay-qr.jpg",
+              missingText: "支付宝收款码暂未配置"
+            })}
           </div>
         </article>
       </section>
     `;
+    initPaymentQrCards(container);
   });
 };
 
@@ -1593,6 +1639,18 @@ const renderAdminDemo = () => {
           <p>预留卡密和演示发货按钮只用于验证后台流程，不会发放真实卡密。</p>
         </div>
         <span class="api-status-pill" data-admin-order-source data-state="pending">读取中</span>
+      </div>
+      <div class="admin-manual-payment-flow">
+        <div>
+          <p class="eyebrow">Manual Payment</p>
+          <h3>人工收款处理流程</h3>
+        </div>
+        <div class="admin-manual-payment-steps">
+          <p><strong>pending</strong><span>用户下单后等待人工付款确认。</span></p>
+          <p><strong>备注订单号</strong><span>用户扫码付款时必须备注订单号。</span></p>
+          <p><strong>标记已支付</strong><span>确认到账后再点击“标记已支付”，未到账不要标记 paid。</span></p>
+          <p><strong>后续处理</strong><span>paid 后再预留卡密和演示发货，不自动发卡。</span></p>
+        </div>
       </div>
       <div class="admin-table-wrap">
         <table class="admin-table">
@@ -1806,6 +1864,28 @@ document.addEventListener("click", async (event) => {
     showToast("订单号已复制");
   } catch {
     showToast("复制失败，请手动复制订单号");
+  }
+});
+
+document.addEventListener("click", async (event) => {
+  const copyButton = event.target.closest("[data-copy-payment-note]");
+
+  if (!copyButton) {
+    return;
+  }
+
+  const paymentNote = copyButton.getAttribute("data-copy-payment-note") || "";
+
+  if (!navigator.clipboard?.writeText) {
+    showToast("当前浏览器不支持自动复制，请手动复制付款备注");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(paymentNote);
+    showToast("付款备注已复制");
+  } catch {
+    showToast("复制失败，请手动复制付款备注");
   }
 });
 

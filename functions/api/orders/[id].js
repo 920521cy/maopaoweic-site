@@ -7,10 +7,10 @@ const json = (data, init = {}) => new Response(JSON.stringify(data), {
 });
 
 const deliveryStatusByOrderStatus = {
-  pending: "订单已创建，等待人工付款确认。",
-  paid: "付款已确认，等待后台处理发货。",
+  pending: "等待人工付款确认",
+  paid: "已确认付款，等待后台处理",
   demo: "演示订单，未接入真实支付和发货。",
-  shipped: "演示发货已完成，当前不会显示或发送真实卡密。",
+  shipped: "已处理完成",
   canceled: "已取消"
 };
 
