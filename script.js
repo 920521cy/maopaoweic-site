@@ -8,6 +8,7 @@ const siteData = window.SITE_DATA || {};
 const products = Array.isArray(siteData.products) ? siteData.products : [];
 const demoOrders = Array.isArray(siteData.demoOrders) ? siteData.demoOrders : [];
 const demoCards = Array.isArray(siteData.demoCards) ? siteData.demoCards : [];
+const WECHAT_ID = "Lg101369";
 const ADMIN_KEY_STORAGE_KEY = "maopaoweic.adminKey";
 const ADMIN_AUTH_REQUIRED_MESSAGE = "需要管理员访问口令后才能读取真实后台数据。";
 const ADMIN_PRODUCT_AUTH_REQUIRED_MESSAGE = "需要管理员访问口令后才能读取后台商品管理数据。";
@@ -61,6 +62,250 @@ const clearStoredAdminKey = () => {
 };
 
 const hasStoredAdminKey = () => Boolean(getStoredAdminKey());
+
+const initCosmicBackground = () => {
+  const existingCanvas = document.querySelector("#cosmic-bg");
+  const canvas = existingCanvas || document.createElement("canvas");
+  const context = canvas.getContext("2d", { alpha: true });
+
+  if (!context) {
+    return;
+  }
+
+  if (!existingCanvas) {
+    canvas.id = "cosmic-bg";
+    canvas.setAttribute("aria-hidden", "true");
+    document.body.prepend(canvas);
+  }
+
+  const reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  let reducedMotion = Boolean(reducedMotionQuery?.matches);
+  let width = 0;
+  let height = 0;
+  let dpr = 1;
+  let stars = [];
+  let particles = [];
+  let rafId = 0;
+  let running = true;
+  let pointerX = 0;
+  let pointerY = 0;
+  let frameSkip = 0;
+
+  const randomBetween = (min, max) => min + Math.random() * (max - min);
+  const isMobile = () => window.innerWidth <= 700;
+
+  const buildScene = () => {
+    const mobile = isMobile();
+    const area = Math.max(1, width * height);
+    const starCount = reducedMotion ? 70 : Math.min(mobile ? 90 : 150, Math.floor(area / (mobile ? 7800 : 9200)));
+    const particleCount = reducedMotion ? 4 : mobile ? 8 : 16;
+
+    stars = Array.from({ length: starCount }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: randomBetween(0.45, mobile ? 1.2 : 1.55),
+      speed: randomBetween(0.012, mobile ? 0.04 : 0.065),
+      twinkle: randomBetween(0.5, 1.9),
+      phase: Math.random() * Math.PI * 2
+    }));
+
+    particles = Array.from({ length: particleCount }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: randomBetween(-0.08, 0.08),
+      vy: randomBetween(-0.05, 0.05),
+      length: randomBetween(46, mobile ? 92 : 150),
+      hue: Math.random() > 0.5 ? "#22d3ee" : "#5eead4",
+      phase: Math.random() * Math.PI * 2
+    }));
+  };
+
+  const resize = () => {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    pointerX = width * 0.5;
+    pointerY = height * 0.5;
+    buildScene();
+  };
+
+  const drawNebula = (time) => {
+    const gradient = context.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, "#020617");
+    gradient.addColorStop(0.45, "#061225");
+    gradient.addColorStop(1, "#120b2f");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+
+    const drift = reducedMotion ? 0 : Math.sin(time * 0.00008) * 34;
+    const nebulaA = context.createRadialGradient(width * 0.18 + drift, height * 0.12, 0, width * 0.18 + drift, height * 0.12, Math.max(width, height) * 0.58);
+    nebulaA.addColorStop(0, "rgba(34, 211, 238, 0.22)");
+    nebulaA.addColorStop(0.36, "rgba(124, 58, 237, 0.10)");
+    nebulaA.addColorStop(1, "rgba(2, 6, 23, 0)");
+    context.fillStyle = nebulaA;
+    context.fillRect(0, 0, width, height);
+
+    const nebulaB = context.createRadialGradient(width * 0.82 - drift, height * 0.18, 0, width * 0.82 - drift, height * 0.18, Math.max(width, height) * 0.48);
+    nebulaB.addColorStop(0, "rgba(94, 234, 212, 0.14)");
+    nebulaB.addColorStop(0.42, "rgba(124, 58, 237, 0.10)");
+    nebulaB.addColorStop(1, "rgba(2, 6, 23, 0)");
+    context.fillStyle = nebulaB;
+    context.fillRect(0, 0, width, height);
+  };
+
+  const drawStars = (time) => {
+    stars.forEach((star) => {
+      if (!reducedMotion) {
+        star.y += star.speed;
+        star.x += Math.sin(time * 0.00012 + star.phase) * 0.012;
+        if (star.y > height + 6) {
+          star.y = -6;
+          star.x = Math.random() * width;
+        }
+      }
+
+      const alpha = 0.34 + Math.sin(time * 0.001 * star.twinkle + star.phase) * 0.22;
+      context.beginPath();
+      context.fillStyle = `rgba(219, 242, 255, ${Math.max(0.15, alpha)})`;
+      context.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+      context.fill();
+    });
+  };
+
+  const drawClothGrid = (time) => {
+    const mobile = isMobile();
+    const spacing = mobile ? 92 : 74;
+    const wave = reducedMotion ? 0 : time * 0.00028;
+    const parallaxX = mobile ? 0 : (pointerX / Math.max(width, 1) - 0.5) * 18;
+    const parallaxY = mobile ? 0 : (pointerY / Math.max(height, 1) - 0.5) * 12;
+
+    context.lineWidth = 1;
+    context.strokeStyle = mobile ? "rgba(34, 211, 238, 0.055)" : "rgba(34, 211, 238, 0.075)";
+
+    for (let y = -spacing; y < height + spacing; y += spacing) {
+      context.beginPath();
+      for (let x = -spacing; x <= width + spacing; x += 18) {
+        const offset = Math.sin(x * 0.012 + wave + y * 0.004) * (mobile ? 9 : 16);
+        const px = x + parallaxX;
+        const py = y + offset + parallaxY;
+        if (x <= -spacing) {
+          context.moveTo(px, py);
+        } else {
+          context.lineTo(px, py);
+        }
+      }
+      context.stroke();
+    }
+
+    context.strokeStyle = mobile ? "rgba(124, 58, 237, 0.04)" : "rgba(94, 234, 212, 0.052)";
+    for (let x = -spacing; x < width + spacing; x += spacing) {
+      context.beginPath();
+      for (let y = -spacing; y <= height + spacing; y += 18) {
+        const offset = Math.cos(y * 0.012 + wave + x * 0.004) * (mobile ? 7 : 13);
+        const px = x + offset + parallaxX * 0.4;
+        const py = y + parallaxY * 0.4;
+        if (y <= -spacing) {
+          context.moveTo(px, py);
+        } else {
+          context.lineTo(px, py);
+        }
+      }
+      context.stroke();
+    }
+  };
+
+  const drawEnergyLines = (time) => {
+    particles.forEach((particle) => {
+      if (!reducedMotion) {
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        if (particle.x < -160 || particle.x > width + 160 || particle.y < -120 || particle.y > height + 120) {
+          particle.x = Math.random() * width;
+          particle.y = Math.random() * height;
+        }
+      }
+
+      const angle = Math.sin(time * 0.00042 + particle.phase) * 0.8;
+      const endX = particle.x + Math.cos(angle) * particle.length;
+      const endY = particle.y + Math.sin(angle) * particle.length;
+      const line = context.createLinearGradient(particle.x, particle.y, endX, endY);
+      line.addColorStop(0, "rgba(34, 211, 238, 0)");
+      line.addColorStop(0.5, particle.hue === "#22d3ee" ? "rgba(34, 211, 238, 0.24)" : "rgba(94, 234, 212, 0.22)");
+      line.addColorStop(1, "rgba(124, 58, 237, 0)");
+      context.strokeStyle = line;
+      context.lineWidth = 1.2;
+      context.beginPath();
+      context.moveTo(particle.x, particle.y);
+      context.lineTo(endX, endY);
+      context.stroke();
+    });
+  };
+
+  const render = (time = 0) => {
+    drawNebula(time);
+    drawStars(time);
+    drawClothGrid(time);
+    drawEnergyLines(time);
+  };
+
+  const animate = (time) => {
+    if (!running) {
+      return;
+    }
+
+    if (!document.hidden) {
+      frameSkip += 1;
+      const skip = reducedMotion ? 18 : isMobile() ? 2 : 1;
+      if (frameSkip >= skip) {
+        frameSkip = 0;
+        render(time);
+      }
+    }
+
+    rafId = window.requestAnimationFrame(animate);
+  };
+
+  window.addEventListener("resize", resize, { passive: true });
+  window.addEventListener("mousemove", (event) => {
+    if (isMobile()) {
+      return;
+    }
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+  }, { passive: true });
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && running && !rafId) {
+      rafId = window.requestAnimationFrame(animate);
+    }
+  });
+
+  reducedMotionQuery?.addEventListener?.("change", (event) => {
+    reducedMotion = Boolean(event.matches);
+    buildScene();
+    render(0);
+  });
+
+  resize();
+  render(0);
+
+  if (!reducedMotion) {
+    rafId = window.requestAnimationFrame(animate);
+  }
+
+  window.addEventListener("beforeunload", () => {
+    running = false;
+    if (rafId) {
+      window.cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+  });
+};
 
 const setAdminAccessState = (state = "unauthorized", message) => {
   const status = document.querySelector("[data-admin-access-status]");
@@ -1750,6 +1995,42 @@ const showToast = (message) => {
   }, 2850);
 };
 
+const copyTextWithFallback = async (text) => {
+  const value = String(text || "");
+
+  if (!value) {
+    return false;
+  }
+
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      // Fall through to the textarea-based copy path.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  textarea.style.top = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  }
+
+  textarea.remove();
+  return copied;
+};
+
 const refreshAdminProtectedData = async () => {
   await Promise.all([
     renderAdminProductManagement(),
@@ -1804,6 +2085,8 @@ if (year) {
   year.textContent = new Date().getFullYear();
 }
 
+initCosmicBackground();
+
 if (menuButton && navLinks) {
   menuButton.addEventListener("click", () => {
     const isOpen = navLinks.classList.toggle("is-open");
@@ -1811,10 +2094,13 @@ if (menuButton && navLinks) {
   });
 }
 
-document.querySelectorAll('a[href^="#"]').forEach((link) => {
+document.querySelectorAll('a[href^="#"], a[href^="/#"]').forEach((link) => {
   link.addEventListener("click", (event) => {
-    const targetId = link.getAttribute("href");
-    const target = targetId ? document.querySelector(targetId) : null;
+    const rawHref = link.getAttribute("href") || "";
+    const linkUrl = new URL(rawHref, window.location.origin);
+    const currentPath = window.location.pathname.replace(/\/$/, "") || "/";
+    const linkPath = linkUrl.pathname.replace(/\/$/, "") || "/";
+    const target = linkUrl.hash && linkPath === currentPath ? document.querySelector(linkUrl.hash) : null;
 
     if (!target) {
       return;
@@ -1825,6 +2111,17 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
     navLinks?.classList.remove("is-open");
     menuButton?.setAttribute("aria-expanded", "false");
   });
+});
+
+document.addEventListener("click", async (event) => {
+  const copyButton = event.target.closest("[data-copy-wechat]");
+
+  if (!copyButton) {
+    return;
+  }
+
+  await copyTextWithFallback(WECHAT_ID);
+  showToast(`微信号已复制：${WECHAT_ID}`);
 });
 
 renderFeaturedProducts();

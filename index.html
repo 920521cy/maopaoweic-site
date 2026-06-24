@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="冒泡维C的个人 AI 实验室、自动化项目展示与独立开发记录站。">
+  <meta name="description" content="冒泡维C AI Lab 提供 AI 工具服务介绍、自动化项目展示与自动发货平台下单入口，支持微信咨询 Lg101369。">
   <meta name="theme-color" content="#05070d">
-  <title>冒泡维C · Personal AI Lab</title>
+  <title>冒泡维C AI Lab | AI 服务与自动化项目导航</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" href="/favicon-32x32.png" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -14,11 +14,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
 </head>
-<body>
-  <header class="site-header">
-    <a class="brand" href="/#home" aria-label="冒泡维C 首页">
+<body class="landing-page">
+  <header class="site-header landing-header">
+    <a class="brand" href="/#home" aria-label="冒泡维C AI Lab 首页">
       <span class="brand-mark">C</span>
-      <span>冒泡维C</span>
+      <span>冒泡维C AI Lab</span>
     </a>
 
     <button class="menu-button" type="button" aria-label="打开导航" aria-expanded="false">
@@ -27,279 +27,176 @@
     </button>
 
     <nav class="nav-links" aria-label="主导航">
-      <a href="/#home">首页</a>
-      <a href="/#projects">项目</a>
-      <a href="/products.html">商品</a>
-      <a href="/order.html">订单</a>
-      <a href="/login.html">登录</a>
+      <a href="#services">服务项目</a>
+      <a href="#guide">怎么选择</a>
+      <a href="#about">服务说明</a>
+      <a href="#order">下单入口</a>
+      <a href="#contact">联系我</a>
     </nav>
+
+    <div class="nav-actions">
+      <button class="button secondary compact-button" type="button" data-copy-wechat>复制 Lg101369</button>
+      <a class="button primary compact-button" href="https://pay.ldxp.cn/shop/TYZ9LG9R" target="_blank" rel="noopener noreferrer">进入自动发货平台</a>
+    </div>
   </header>
 
   <main>
-    <section class="hero section" id="home">
-      <div class="hero-copy">
-        <p class="eyebrow">Interactive AI Cloth Lab</p>
-        <h1>冒泡维C <span class="hero-title-accent">AI Lab</span></h1>
-        <p class="hero-subtitle">个人 AI 实验室 / 自动化项目展示 / 独立开发站点</p>
-        <p class="hero-text">
-          用轻量 Canvas 构建实时布料风效，把 AI 实验室、自动化项目和独立开发记录放在同一个可交互的入口里。
-          当前商品、订单和后台流程均为演示，不接真实支付，也不会发放真实卡密。
-        </p>
-        <div class="hero-tags" aria-label="实验室标签">
-          <span>AI Agent</span>
-          <span>n8n workflow</span>
-          <span>GPT playground</span>
-          <span>Realtime cloth sim</span>
-        </div>
+    <section class="section landing-hero" id="home">
+      <div class="landing-hero-copy">
+        <p class="eyebrow">AI Service Navigator</p>
+        <h1>AI 工具服务与自动化项目导航站</h1>
+        <p class="hero-subtitle">整理常用 AI 工具、会员服务、自动化项目与数字服务入口。</p>
+        <p class="hero-text">下单与发货由自动发货平台完成，本站负责介绍服务内容、整理选择建议，并引导你进入对应平台页面。下单前请以平台商品详情、库存和售后说明为准。</p>
         <div class="hero-actions">
-          <a class="button primary" href="#projects">查看项目</a>
-          <a class="button secondary" href="#labs">进入实验区</a>
+          <a class="button primary" href="https://pay.ldxp.cn/shop/TYZ9LG9R" target="_blank" rel="noopener noreferrer">进入自动发货平台</a>
+          <button class="button secondary" type="button" data-copy-wechat>复制微信 Lg101369</button>
+        </div>
+        <div class="landing-trust-row" aria-label="服务边界">
+          <span>外部平台下单</span>
+          <span>微信咨询</span>
+          <span>非官方站点</span>
+          <span>规则以平台为准</span>
         </div>
       </div>
 
-      <aside class="cloth-lab-panel" data-cloth-lab aria-label="AI实验室实时布料风效">
-        <div class="cloth-panel-header">
-          <span>Realtime Cloth Field</span>
-          <strong>Canvas 2D</strong>
+      <aside class="service-matrix-card" aria-label="AI 服务矩阵">
+        <div class="matrix-orbit" aria-hidden="true"></div>
+        <div class="matrix-header">
+          <p class="eyebrow">Service Matrix</p>
+          <h2>常用入口整理</h2>
         </div>
-        <div class="cloth-canvas-shell">
-          <canvas data-cloth-canvas width="720" height="520" aria-label="实时柔性布料网格动画"></canvas>
-          <div class="cloth-readout">
-            <span>wind mesh</span>
-            <strong>interactive</strong>
-          </div>
+        <div class="matrix-grid">
+          <span>GPT</span>
+          <span>Claude</span>
+          <span>Gemini</span>
+          <span>Grok</span>
+          <span>AI 自动化</span>
+          <span>独立项目</span>
         </div>
-
-        <div class="cloth-controls" aria-label="布料风效控制面板">
-          <label>
-            <span>Wind 风力 <output data-cloth-value="wind">55</output></span>
-            <input data-cloth-control="wind" type="range" min="0" max="100" value="55">
-          </label>
-          <label>
-            <span>Turbulence 湍流 <output data-cloth-value="turbulence">42</output></span>
-            <input data-cloth-control="turbulence" type="range" min="0" max="100" value="42">
-          </label>
-          <label>
-            <span>Stiffness 刚度 <output data-cloth-value="stiffness">62</output></span>
-            <input data-cloth-control="stiffness" type="range" min="0" max="100" value="62">
-          </label>
-          <label>
-            <span>Speed 速度 <output data-cloth-value="speed">58</output></span>
-            <input data-cloth-control="speed" type="range" min="0" max="100" value="58">
-          </label>
-        </div>
+        <p>具体套餐、价格、库存、交付规则和售后说明，请进入自动发货平台查看。</p>
       </aside>
     </section>
 
-    <section class="section intro-section" id="about">
-      <div class="section-heading">
-        <p class="eyebrow">About</p>
-        <h2>把 AI 想法变成可见的个人实验记录</h2>
-      </div>
-      <div class="intro-copy">
-        <p>
-          maopaoweic-site 用来承载我的 AI 实验、自动化项目和独立开发尝试。页面内容会先以占位和方向为主，后续逐步替换成真实项目、过程截图、复盘笔记和工具入口。
-        </p>
-        <div class="mini-stats" aria-label="站点方向">
-          <span>静态网站</span>
-          <span>AI 协作</span>
-          <span>长期迭代</span>
-        </div>
-        <div class="about-lab-cards" aria-label="实验方向概览">
-          <article>
-            <span>AI Agent</span>
-            <p>个人智能体与自动化执行测试</p>
-          </article>
-          <article>
-            <span>Cloth Simulation</span>
-            <p>Canvas 实时布料风场实验</p>
-          </article>
-          <article>
-            <span>Automation</span>
-            <p>n8n / 脚本 / 工作流自动化</p>
-          </article>
-          <article>
-            <span>AI Tools</span>
-            <p>Codex / GPT / Gemini 工具实验</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section highlights" aria-label="站点亮点">
-      <article class="highlight-card">
-        <span>01</span>
-        <h3>AI实验</h3>
-        <p>提示词、Agent、多模态应用和内容生成流程的尝试记录。</p>
-      </article>
-      <article class="highlight-card">
-        <span>02</span>
-        <h3>自动化项目</h3>
-        <p>把重复操作拆成可执行流程，沉淀小工具和实践方法。</p>
-      </article>
-      <article class="highlight-card">
-        <span>03</span>
-        <h3>独立开发</h3>
-        <p>记录从想法、设计、实现到上线的轻量产品构建过程。</p>
-      </article>
-    </section>
-
-    <section class="section showcase-section" id="projects">
+    <section class="section landing-section" id="services">
       <div class="section-heading compact">
-        <p class="eyebrow">Projects</p>
-        <h2>项目展示</h2>
-        <p>先搭建展示框架，真实项目内容后续逐步补充。</p>
+        <p class="eyebrow">Services</p>
+        <h2>服务项目一览</h2>
+        <p>这里负责分类说明和选择引导，具体商品以自动发货平台展示为准。</p>
       </div>
 
-      <div class="project-grid">
-        <article class="project-card featured">
-          <div class="card-topline">
-            <span>Featured</span>
-            <strong>01</strong>
-          </div>
-          <h3>AI 自动化工作台</h3>
-          <p>占位项目：整理日常自动化流程、脚本片段和 AI 协作执行记录。</p>
-          <a href="#contact">等待补充</a>
+      <div class="service-card-grid">
+        <article class="landing-service-card">
+          <span>AI 会员服务</span>
+          <h3>ChatGPT / Claude / Gemini / Grok 等</h3>
+          <p>适合想体验主流 AI 工具、日常提问、写作、学习、资料整理和效率辅助的用户。</p>
+          <small>具体套餐、价格和规则以自动发货平台展示为准。</small>
+          <a class="button secondary compact-button" href="https://pay.ldxp.cn/shop/TYZ9LG9R" target="_blank" rel="noopener noreferrer">去平台查看</a>
         </article>
-        <article class="project-card">
-          <div class="card-topline">
-            <span>Web</span>
-            <strong>02</strong>
-          </div>
-          <h3>个人主页系统</h3>
-          <p>占位项目：记录本站的结构、视觉语言、发布链路和迭代过程。</p>
-          <a href="#contact">等待补充</a>
+
+        <article class="landing-service-card">
+          <span>AI 自动化项目</span>
+          <h3>n8n 自动化流程</h3>
+          <p>围绕内容整理、提醒、归档和重复任务处理，适合个人效率和小项目流程。</p>
+          <small>自动化项目会根据实际场景说明能力边界。</small>
+          <a class="button secondary compact-button" href="https://pay.ldxp.cn/shop/TYZ9LG9R" target="_blank" rel="noopener noreferrer">去平台查看</a>
         </article>
-        <article class="project-card">
-          <div class="card-topline">
-            <span>Notes</span>
-            <strong>03</strong>
-          </div>
-          <h3>实验笔记库</h3>
-          <p>占位项目：沉淀提示词、工具体验、复盘片段和阶段性想法。</p>
-          <a href="#contact">等待补充</a>
+
+        <article class="landing-service-card">
+          <span>网站与工具项目</span>
+          <h3>个人网站 / 项目展示页 / 工具页</h3>
+          <p>适合需要展示个人项目、整理服务入口、搭建轻量页面或做工具原型的用户。</p>
+          <small>页面服务以沟通后的实际需求和平台说明为准。</small>
+          <a class="button secondary compact-button" href="https://pay.ldxp.cn/shop/TYZ9LG9R" target="_blank" rel="noopener noreferrer">去平台查看</a>
+        </article>
+
+        <article class="landing-service-card">
+          <span>数字服务 / 资料服务</span>
+          <h3>资料整理与数字服务入口</h3>
+          <p>适合想快速查看可用服务、资料说明、库存状态和下单规则的用户。</p>
+          <small>价格与库存以自动发货平台页面为准。</small>
+          <a class="button secondary compact-button" href="https://pay.ldxp.cn/shop/TYZ9LG9R" target="_blank" rel="noopener noreferrer">去平台查看</a>
         </article>
       </div>
     </section>
 
-    <section class="section resources-section" id="resources">
+    <section class="section landing-section" id="guide">
       <div class="section-heading compact">
-        <p class="eyebrow">Digital Goods</p>
-        <h2>数字商品 / 资源</h2>
-        <p>围绕 AI 自动化、独立开发和轻量工具沉淀可复用资源，当前为静态展示骨架。</p>
+        <p class="eyebrow">Guide</p>
+        <h2>不知道选哪个？看这里</h2>
+        <p>按你的主要目标先缩小范围，不确定时先复制微信咨询。</p>
       </div>
 
-      <div class="product-grid preview-grid" data-featured-products></div>
-
-      <div class="section-actions">
-        <a class="button primary" href="/products.html">查看全部商品</a>
+      <div class="choice-grid">
+        <article><strong>低成本体验 AI</strong><span>先看 Gemini / Grok 类服务。</span></article>
+        <article><strong>稳定使用 ChatGPT</strong><span>优先查看 GPT 类服务说明。</span></article>
+        <article><strong>写作和长文档</strong><span>重点关注 Claude 类服务。</span></article>
+        <article><strong>自动化效率流程</strong><span>查看 n8n / 自动化项目。</span></article>
+        <article><strong>个人网站或项目页</strong><span>查看网站与工具项目。</span></article>
+        <article><strong>需求不确定</strong><span>先加微信 Lg101369 咨询。</span></article>
       </div>
     </section>
 
-    <section class="section labs-section" id="labs">
+    <section class="section landing-section about-service-section" id="about">
       <div class="section-heading compact">
-        <p class="eyebrow">AI Experiments</p>
-        <h2>实验方向</h2>
-        <p>围绕个人效率、创作辅助和工具化产出，持续做小规模验证。</p>
+        <p class="eyebrow">Read Before Order</p>
+        <h2>为什么建议先看说明再下单？</h2>
       </div>
 
-      <div class="lab-track">
+      <div class="explain-grid">
         <article>
-          <span>Prompt</span>
-          <h3>提示词结构</h3>
-          <p>记录任务拆解、风格控制、输出格式和复用模板。</p>
+          <h3>规则不同</h3>
+          <p>不同服务的开通方式、使用规则和售后规则不同，下单前请仔细阅读平台商品详情。</p>
         </article>
         <article>
-          <span>Agent</span>
-          <h3>Agent 协作</h3>
-          <p>探索工具调用、长任务跟进、网页检查和代码协作。</p>
+          <h3>平台完成交易</h3>
+          <p>自动发货平台负责下单、付款与发货；本站负责说明服务内容和引导入口。</p>
         </article>
         <article>
-          <span>Flow</span>
-          <h3>自动化流程</h3>
-          <p>把输入、判断、执行和反馈做成轻量可复用流程。</p>
+          <h3>先咨询再选择</h3>
+          <p>如果不确定适合哪类服务，可以先复制微信 Lg101369 沟通需求。</p>
         </article>
         <article>
-          <span>Media</span>
-          <h3>多模态实验</h3>
-          <p>尝试图像、页面、文档和文本之间的组合工作方式。</p>
+          <h3>明确边界</h3>
+          <p>本站不承诺官方身份、不承诺全网最低价，也不承诺 100% 稳定。</p>
         </article>
       </div>
     </section>
 
-    <section class="section workflow-section" id="workflow">
+    <section class="section landing-section order-entry-section" id="order">
       <div class="section-heading compact">
-        <p class="eyebrow">Workflow</p>
-        <h2>从问题到上线的三步节奏</h2>
+        <p class="eyebrow">Order Entry</p>
+        <h2>选择下单入口</h2>
+        <p>所有交易以外部自动发货平台页面为准，本站不处理站内支付和自动发货。</p>
       </div>
-      <div class="workflow-grid">
-        <article>
-          <span>1</span>
-          <h3>发现问题</h3>
-          <p>从真实使用场景里找重复、低效或值得记录的环节。</p>
+
+      <div class="order-entry-grid">
+        <article class="order-entry-card">
+          <span>推荐入口</span>
+          <h3>自动发货平台</h3>
+          <p>进入平台选择对应商品，按页面提示完成下单。商品名称、价格、库存、发货规则和售后说明以平台页面为准。</p>
+          <a class="button primary" href="https://pay.ldxp.cn/shop/TYZ9LG9R" target="_blank" rel="noopener noreferrer">进入自动发货平台</a>
         </article>
-        <article>
-          <span>2</span>
-          <h3>设计方案</h3>
-          <p>拆出目标、输入、输出、约束和最小可验证版本。</p>
-        </article>
-        <article>
-          <span>3</span>
-          <h3>AI协作实现</h3>
-          <p>用 AI 辅助编码、排查、整理文案和完成上线检查。</p>
+
+        <article class="order-entry-card" id="contact">
+          <span>咨询入口</span>
+          <h3>微信咨询</h3>
+          <p>不确定买哪个，或需要先说明使用场景，可以复制微信号后添加咨询。</p>
+          <strong class="wechat-id">Lg101369</strong>
+          <button class="button secondary" type="button" data-copy-wechat>复制微信号</button>
         </article>
       </div>
     </section>
 
-    <section class="section contact-section" id="contact">
-      <div class="contact-card">
-        <div>
-          <p class="eyebrow">Contact</p>
-          <h2>保持轻量联系</h2>
-          <p>欢迎交流 AI 实验、自动化想法、个人网站和独立开发实践。</p>
-        </div>
-        <div class="contact-lines" aria-label="联系方式列表">
-          <p>
-            <span>QQ邮箱</span>
-            <a href="mailto:1013696604@qq.com">1013696604@qq.com</a>
-          </p>
-          <p>
-            <span>地球账号</span>
-            <strong>Lg101369</strong>
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <section class="section faq-section" id="faq">
-      <div class="section-heading compact">
-        <p class="eyebrow">FAQ</p>
-        <h2>常见问题</h2>
-      </div>
-      <div class="faq-list">
-        <details open>
-          <summary>这个网站是做什么的？</summary>
-          <p>这是冒泡维C的个人 AI 实验室，用来展示自动化项目、AI 实验和独立开发过程。</p>
-        </details>
-        <details>
-          <summary>现在的内容都是最终版吗？</summary>
-          <p>不是。当前重点是搭建结构和视觉基调，具体项目说明、案例和作品会后续补充。</p>
-        </details>
-        <details>
-          <summary>为什么保持纯静态网站？</summary>
-          <p>为了让站点足够轻、快、易维护，也方便通过 GitHub 和 Cloudflare Pages 持续发布。</p>
-        </details>
-      </div>
+    <section class="section disclaimer-section" aria-label="免责声明">
+      <p>本站为个人 AI 服务与项目介绍页，非 OpenAI、Anthropic、Google、xAI、Claude、ChatGPT、Gemini、Grok 等官方站点。商品名称、价格、库存、开通规则、售后说明与发货结果以自动发货平台页面为准。</p>
     </section>
   </main>
 
   <footer class="footer">
     <p>© <span id="year"></span> maopaoweic.top</p>
-    <p>个人 AI 实验室 / 自动化项目展示 / 独立开发站点</p>
+    <p>冒泡维C AI Lab · AI 服务介绍 / 自动化项目展示 / 自动发货平台入口</p>
   </footer>
 
-  <script src="./frontend/canvas-effects/cloth-lab.js"></script>
-  <script src="./site-data.js"></script>
   <script src="./script.js"></script>
 </body>
 </html>
