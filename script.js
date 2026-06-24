@@ -9,6 +9,7 @@ const products = Array.isArray(siteData.products) ? siteData.products : [];
 const demoOrders = Array.isArray(siteData.demoOrders) ? siteData.demoOrders : [];
 const demoCards = Array.isArray(siteData.demoCards) ? siteData.demoCards : [];
 const WECHAT_ID = "Lg101369";
+const PAY_PLATFORM_URL = "https://pay.ldxp.cn/shop/TYZ9LG9R";
 const ADMIN_KEY_STORAGE_KEY = "maopaoweic.adminKey";
 const ADMIN_AUTH_REQUIRED_MESSAGE = "需要管理员访问口令后才能读取真实后台数据。";
 const ADMIN_PRODUCT_AUTH_REQUIRED_MESSAGE = "需要管理员访问口令后才能读取后台商品管理数据。";
@@ -440,65 +441,6 @@ const normalizeOrderFromApi = (order = {}) => ({
   reservedCardKeyId: order.reservedCardKeyId || null
 });
 
-const createDemoOrder = async (productSlug) => {
-  if (!productSlug || !window.fetch) {
-    return null;
-  }
-
-  try {
-    const response = await fetch("/api/orders", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ productSlug })
-    });
-    const data = await response.json();
-
-    if (!response.ok || data?.ok !== true || !data.order) {
-      return null;
-    }
-
-    return {
-      message: data.message || "演示订单已创建，当前未接入真实支付",
-      order: normalizeOrderFromApi(data.order)
-    };
-  } catch {
-    return null;
-  }
-};
-
-const createManualCheckoutOrder = async (productSlug, paymentMethod = "manual") => {
-  if (!productSlug || !window.fetch) {
-    return null;
-  }
-
-  try {
-    const response = await fetch("/api/manual-checkout", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ productSlug, paymentMethod })
-    });
-    const data = await response.json();
-
-    if (!response.ok || data?.ok !== true || !data.order) {
-      return null;
-    }
-
-    return {
-      message: data.message || "人工收款订单已创建，请按页面提示完成付款并备注订单号",
-      order: normalizeOrderFromApi(data.order),
-      paymentUrl: data.paymentUrl || `/payment.html?id=${encodeURIComponent(data.order.id)}`
-    };
-  } catch {
-    return null;
-  }
-};
-
 const fetchAdminJson = async (url, options = {}) => {
   const adminKey = getStoredAdminKey();
 
@@ -801,11 +743,11 @@ const renderProductCard = (product) => `
 const renderDemoOrderCard = (order) => `
   <article class="demo-order-card">
     <span class="status-pill order-status-pill">${escapeHtml(order.status || "demo")}</span>
-    <h2>演示订单已创建</h2>
+    <h2>历史订单状态</h2>
     <p>订单号：<strong>${escapeHtml(order.id)}</strong></p>
     <p>商品名：${escapeHtml(order.productTitle)}</p>
     <p>金额：${escapeHtml(order.amount || "¥0")}</p>
-    <p>当前未接入真实支付，不会发放卡密。</p>
+    <p>新订单请前往自动发货平台处理；本站不会显示或发放真实卡密。</p>
     <div class="demo-order-actions">
       <button class="button secondary compact-button" type="button" data-copy-order-id="${escapeHtml(order.id)}">复制订单号</button>
       <a class="button secondary compact-button" href="/order.html?id=${encodeURIComponent(order.id)}">查看订单</a>
@@ -1499,9 +1441,9 @@ const renderProductDetail = async () => {
       <aside class="purchase-panel">
         <span>${escapeHtml(product.category)}</span>
         <strong>${escapeHtml(product.price)}</strong>
-        <p>当前为人工收款流程，尚未接入自动支付和自动发卡。创建订单后请按付款页提示备注订单号，后台人工确认前不会发货。</p>
-        <button class="button primary" type="button" data-manual-checkout="${escapeHtml(product.slug)}">创建人工付款订单</button>
-        <div class="demo-order-result" data-manual-checkout-result></div>
+        <p>当前下单、付款与发货统一由自动发货平台完成。本站仅展示服务说明，不再创建自建人工付款订单。</p>
+        <a class="button primary" href="${PAY_PLATFORM_URL}" target="_blank" rel="noopener noreferrer">前往自动发货平台</a>
+        <button class="button secondary compact-button" type="button" data-copy-wechat>复制微信 ${escapeHtml(WECHAT_ID)}</button>
       </aside>
     </section>
 
@@ -1615,7 +1557,18 @@ const renderManualPaymentDetail = () => {
   };
 
   if (!orderId) {
-    setState("缺少订单号，请从商品详情页重新创建人工付款订单。", "offline");
+    container.dataset.state = "offline";
+    container.innerHTML = `
+      <article class="payment-status-card">
+        <p class="eyebrow">Payment Deprecated</p>
+        <h1>付款入口已切换</h1>
+        <p>当前已切换为自动发货平台下单，付款与发货请以平台页面为准。本站不再创建自建人工付款订单。</p>
+        <div class="payment-actions">
+          <a class="button primary compact-button" href="${PAY_PLATFORM_URL}" target="_blank" rel="noopener noreferrer">前往自动发货平台</a>
+          <button class="button secondary compact-button" type="button" data-copy-wechat>复制微信 ${escapeHtml(WECHAT_ID)}</button>
+        </div>
+      </article>
+    `;
     return;
   }
 
@@ -1628,54 +1581,38 @@ const renderManualPaymentDetail = () => {
     }
 
     const order = detail.order;
-    const normalizedStatus = String(order.status || "").toLowerCase();
-    const method = String(order.paymentMethod || "manual").toLowerCase();
-    const methodLabel = paymentMethodLabels[method] || paymentMethodLabels.manual;
-    const paymentNote = `订单号：${order.id}`;
-
     container.dataset.state = "connected";
     container.innerHTML = `
       <section class="section payment-detail-grid">
         <article class="payment-status-card">
-          <p class="eyebrow">Manual Payment</p>
-          <h1>人工付款</h1>
-          <p>当前为人工收款流程，尚未接入自动支付接口。付款时必须备注订单号，付款后由管理员人工确认；未确认前不会处理发货，也不会在页面显示真实卡密。</p>
+          <p class="eyebrow">Historical Order</p>
+          <h1>历史订单状态</h1>
+          <p>当前已切换为自动发货平台下单，新的付款与发货请以平台页面为准。此页仅保留历史订单状态查看，不再作为新订单付款入口。</p>
           <div class="order-result-grid payment-order-summary">
             <p><span>订单号</span><strong>${escapeHtml(order.id)}</strong></p>
             <p><span>商品名称</span><strong>${escapeHtml(order.productTitle)}</strong></p>
             <p><span>金额</span><strong>${escapeHtml(order.amount || "¥0")}</strong></p>
             <p><span>当前状态</span><strong>${escapeHtml(order.status || "pending")}</strong></p>
-            <p><span>付款方式</span><strong>${escapeHtml(methodLabel)}</strong></p>
             <p><span>发货状态</span><strong>${escapeHtml(order.deliveryStatus || "等待人工确认")}</strong></p>
           </div>
           <div class="payment-actions">
             <button class="button secondary compact-button" type="button" data-copy-order-id="${escapeHtml(order.id)}">复制订单号</button>
-            <button class="button secondary compact-button" type="button" data-copy-payment-note="${escapeHtml(paymentNote)}">复制付款备注</button>
-            <a class="button primary compact-button" href="/order.html?id=${encodeURIComponent(order.id)}">我已付款，查看订单状态</a>
+            <a class="button secondary compact-button" href="/order.html?id=${encodeURIComponent(order.id)}">查看历史订单状态</a>
+            <a class="button primary compact-button" href="${PAY_PLATFORM_URL}" target="_blank" rel="noopener noreferrer">前往自动发货平台</a>
           </div>
         </article>
 
         <article class="payment-instructions-card">
-          <p class="eyebrow">Payment Note</p>
-          <h2>付款备注要求</h2>
-          <p>请在转账备注中填写：<strong>${escapeHtml(paymentNote)}</strong></p>
-          <p>${normalizedStatus === "pending" ? "该订单正在等待人工付款确认。管理员确认到账前不会处理发货。" : escapeHtml(order.deliveryStatus || "订单状态待确认。")}</p>
-          <div class="payment-qr-grid">
-            ${renderPaymentQrCard({
-              label: "微信",
-              src: "/assets/payment/wechat-qr.jpg",
-              missingText: "微信收款码暂未配置"
-            })}
-            ${renderPaymentQrCard({
-              label: "支付宝",
-              src: "/assets/payment/alipay-qr.jpg",
-              missingText: "支付宝收款码暂未配置"
-            })}
+          <p class="eyebrow">New Orders</p>
+          <h2>新订单请使用自动发货平台</h2>
+          <p>本站不再提供自建人工付款入口，也不会在页面显示真实卡密。请进入自动发货平台查看商品规则、付款方式、发货结果和售后说明。</p>
+          <div class="payment-actions">
+            <a class="button primary compact-button" href="${PAY_PLATFORM_URL}" target="_blank" rel="noopener noreferrer">进入自动发货平台</a>
+            <button class="button secondary compact-button" type="button" data-copy-wechat>复制微信 ${escapeHtml(WECHAT_ID)}</button>
           </div>
         </article>
       </section>
     `;
-    initPaymentQrCards(container);
   });
 };
 
@@ -2177,41 +2114,6 @@ document.addEventListener("click", async (event) => {
     showToast("付款备注已复制");
   } catch {
     showToast("复制失败，请手动复制付款备注");
-  }
-});
-
-document.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-manual-checkout]");
-
-  if (!button) {
-    return;
-  }
-
-  const productSlug = button.getAttribute("data-manual-checkout") || "";
-  const resultContainer = button.closest(".purchase-panel")?.querySelector("[data-manual-checkout-result]");
-  const originalText = button.textContent;
-
-  button.disabled = true;
-  button.textContent = "正在创建人工付款订单";
-
-  const result = await createManualCheckoutOrder(productSlug);
-
-  button.disabled = false;
-  button.textContent = originalText;
-
-  if (!result?.order) {
-    showToast("订单系统暂时不可用，请稍后再试");
-    return;
-  }
-
-  if (resultContainer) {
-    resultContainer.innerHTML = `<p>${escapeHtml(result.message)}</p>`;
-  }
-
-  showToast(result.message);
-
-  if (result.paymentUrl) {
-    window.location.href = result.paymentUrl;
   }
 });
 
