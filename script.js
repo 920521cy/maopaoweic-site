@@ -99,6 +99,7 @@ const initCosmicBackground = () => {
   let frameSkip = 0;
   let lastTime = 0;
   let nextMeteorAt = 0;
+  let resizeTimeout = 0;
 
   const isMobile = () => window.innerWidth <= 700;
 
@@ -118,10 +119,10 @@ const initCosmicBackground = () => {
   const buildScene = () => {
     const mobile = isMobile();
     const area = Math.max(1, width * height);
-    const farCount = reducedMotion ? 80 : Math.min(mobile ? 120 : 260, Math.floor(area / (mobile ? 3600 : 3200)));
-    const midCount = reducedMotion ? 36 : Math.min(mobile ? 48 : 110, Math.floor(area / (mobile ? 9200 : 7600)));
-    const nearCount = reducedMotion ? 10 : mobile ? 14 : 28;
-    const dustCount = reducedMotion ? 70 : mobile ? 130 : 260;
+    const farCount = reducedMotion ? 32 : Math.min(mobile ? 72 : 260, Math.floor(area / (mobile ? 3600 : 3200)));
+    const midCount = reducedMotion ? 14 : Math.min(mobile ? 29 : 110, Math.floor(area / (mobile ? 9200 : 7600)));
+    const nearCount = reducedMotion ? 4 : mobile ? 8 : 28;
+    const dustCount = reducedMotion ? 28 : mobile ? 78 : 260;
 
     stars = [
       ...Array.from({ length: farCount }, () => ({
@@ -146,29 +147,37 @@ const initCosmicBackground = () => {
         alpha: randomBetween(0.28, 0.68),
         hue: Math.random() > 0.25 ? "224, 242, 254" : "191, 219, 254"
       })),
-      ...Array.from({ length: nearCount }, () => ({
-        layer: "near",
-        x: Math.random() * width,
-        y: Math.random() * height,
-        r: randomBetween(1.0, mobile ? 1.55 : 2.1),
-        drift: randomBetween(0.01, 0.026),
-        twinkle: randomBetween(0.5, 0.95),
-        phase: Math.random() * TAU,
-        alpha: randomBetween(0.5, 0.86),
-        hue: Math.random() > 0.35 ? "224, 242, 254" : "253, 230, 138"
-      }))
+      ...Array.from({ length: nearCount }, () => {
+        const r = randomBetween(1.0, mobile ? 1.55 : 2.1);
+        return {
+          layer: "near",
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r,
+          drift: randomBetween(0.01, 0.026),
+          twinkle: randomBetween(0.5, 0.95),
+          phase: Math.random() * TAU,
+          alpha: randomBetween(0.5, 0.86),
+          hue: Math.random() > 0.35 ? "224, 242, 254" : "253, 230, 138",
+          glowGradient: context.createRadialGradient(0, 0, 0, 0, 0, r * 5.5)
+        };
+      })
     ];
 
-    dust = Array.from({ length: dustCount }, () => ({
-      angle: randomBetween(-0.35, TAU + 0.65),
-      orbit: randomBetween(-0.11, 0.12),
-      spread: randomBetween(-18, 18),
-      r: randomBetween(0.45, mobile ? 1.35 : 1.75),
-      speed: randomBetween(0.000012, 0.00004),
-      alpha: randomBetween(0.2, 0.72),
-      phase: Math.random() * TAU,
-      color: Math.random() > 0.45 ? "250, 204, 21" : Math.random() > 0.5 ? "251, 191, 36" : "253, 230, 138"
-    }));
+    dust = Array.from({ length: dustCount }, () => {
+      const r = randomBetween(0.45, mobile ? 1.35 : 1.75);
+      return {
+        angle: randomBetween(-0.35, TAU + 0.65),
+        orbit: randomBetween(-0.11, 0.12),
+        spread: randomBetween(-18, 18),
+        r,
+        speed: randomBetween(0.000012, 0.00004),
+        alpha: randomBetween(0.2, 0.72),
+        phase: Math.random() * TAU,
+        color: Math.random() > 0.45 ? "250, 204, 21" : Math.random() > 0.5 ? "251, 191, 36" : "253, 230, 138",
+        glowGradient: context.createRadialGradient(0, 0, 0, 0, 0, r * 5.2)
+      };
+    });
 
     nebulaClouds = Array.from({ length: mobile ? 4 : 7 }, (_, index) => ({
       x: randomBetween(width * 0.12, width * 0.88),
@@ -196,17 +205,22 @@ const initCosmicBackground = () => {
   };
 
   const resize = () => {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    width = Math.max(1, window.innerWidth);
-    height = Math.max(1, window.innerHeight);
-    canvas.width = Math.floor(width * dpr);
-    canvas.height = Math.floor(height * dpr);
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    context.setTransform(dpr, 0, 0, dpr, 0, 0);
-    pointerX = width * 0.5;
-    pointerY = height * 0.5;
-    buildScene();
+    if (resizeTimeout) {
+      window.clearTimeout(resizeTimeout);
+    }
+    resizeTimeout = window.setTimeout(() => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = Math.max(1, window.innerWidth);
+      height = Math.max(1, window.innerHeight);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      pointerX = width * 0.5;
+      pointerY = height * 0.5;
+      buildScene();
+    }, 150);
   };
 
   const drawSpaceBase = (time) => {
@@ -333,10 +347,9 @@ const initCosmicBackground = () => {
       const y = star.y;
 
       if (star.layer === "near") {
-        const glow = context.createRadialGradient(x, y, 0, x, y, star.r * 5.5);
-        glow.addColorStop(0, `rgba(${star.hue}, ${alpha * 0.24})`);
-        glow.addColorStop(1, `rgba(${star.hue}, 0)`);
-        context.fillStyle = glow;
+        star.glowGradient.addColorStop(0, `rgba(${star.hue}, ${alpha * 0.24})`);
+        star.glowGradient.addColorStop(1, `rgba(${star.hue}, 0)`);
+        context.fillStyle = star.glowGradient;
         context.beginPath();
         context.arc(x, y, star.r * 5.5, 0, TAU);
         context.fill();
@@ -376,10 +389,9 @@ const initCosmicBackground = () => {
 
       const shimmer = 0.68 + Math.sin(time * 0.0012 + particle.phase) * 0.32;
       const alpha = Math.max(0.04, particle.alpha * shimmer);
-      const glow = context.createRadialGradient(x, y, 0, x, y, particle.r * 5.2);
-      glow.addColorStop(0, `rgba(${particle.color}, ${alpha * 0.38})`);
-      glow.addColorStop(1, `rgba(${particle.color}, 0)`);
-      context.fillStyle = glow;
+      particle.glowGradient.addColorStop(0, `rgba(${particle.color}, ${alpha * 0.38})`);
+      particle.glowGradient.addColorStop(1, `rgba(${particle.color}, 0)`);
+      context.fillStyle = particle.glowGradient;
       context.beginPath();
       context.arc(x, y, particle.r * 5.2, 0, TAU);
       context.fill();
